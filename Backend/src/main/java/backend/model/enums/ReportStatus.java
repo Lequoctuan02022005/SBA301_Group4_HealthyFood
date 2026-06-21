@@ -1,4 +1,4 @@
-package com.he190857.backend.model.enums;
+package backend.model.enums;
 
 public enum ReportStatus {
     PENDING,
