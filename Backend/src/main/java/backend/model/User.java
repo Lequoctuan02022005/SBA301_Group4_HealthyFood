@@ -47,8 +47,13 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String customerPersonalInfo;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subscription_package_id")
+    private SubscriptionPackage subscriptionPackage;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
+    private LocalDateTime expireAt;
 }
