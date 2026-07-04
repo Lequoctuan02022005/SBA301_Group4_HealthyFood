@@ -3,32 +3,27 @@ import backend.model.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "products")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Product {
+public class Product extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    // Seller đăng sản phẩm
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
+    @JoinColumn(name = "seller_id")
     private User seller;
 
-    // Category PRODUCT
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(nullable = false, length = 150)
+    @Column(nullable = false)
     private String name;
 
     @Column(columnDefinition = "TEXT")
@@ -43,22 +38,13 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal price;
 
-    @Column(nullable = false)
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private ProductStatus status;
 
     @Column(columnDefinition = "TEXT")
     private String reviewComment;
 
-    @Column(length = 500)
-    private String imageUrl;
-
     private LocalDateTime reviewDate;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

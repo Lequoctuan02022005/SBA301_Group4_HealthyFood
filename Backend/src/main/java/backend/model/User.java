@@ -10,38 +10,29 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
+public class User extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false,unique = true,length = 100)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false,length = 100)
     private String fullName;
 
-    @Column(length = 20)
     private String phone;
 
     private String avatar;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private UserStatus status;
 
-    @Column(nullable = false)
     private Boolean emailVerified;
 
     @Column(columnDefinition = "TEXT")
@@ -51,9 +42,11 @@ public class User {
     @JoinColumn(name = "subscription_package_id")
     private SubscriptionPackage subscriptionPackage;
 
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
-
+    @Column(nullable = true)
     private LocalDateTime expireAt;
+
+    @Column(nullable = true)
+    private LocalDateTime unbanAt;
+
+    private int violationCount;
 }
