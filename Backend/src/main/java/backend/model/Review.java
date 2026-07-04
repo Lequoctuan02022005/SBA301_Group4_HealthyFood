@@ -1,21 +1,27 @@
 package backend.model;
+
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "product_targets")
+@Table(name = "reviews")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductTarget extends BaseEntity {
+public class Review extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "customer_id")
+    private User customer;
+
+    private Integer rating;
+
+    @Column(columnDefinition = "TEXT")
+    private String comment;
 }
