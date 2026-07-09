@@ -18,7 +18,7 @@ public class Order extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")
     private User customer;
-
+    //thêm bảng voucher
     private String voucherCode;
 
     @Column(nullable = false)
