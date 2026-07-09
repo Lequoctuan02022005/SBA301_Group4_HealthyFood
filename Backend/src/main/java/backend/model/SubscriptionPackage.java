@@ -1,5 +1,6 @@
 package backend.model;
 
+import backend.model.enums.PackageStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class SubscriptionPackage extends BaseEntity {
 
     private Integer durationDays;
 
+    private PackageStatus status;
     @Column(columnDefinition = "TEXT")
     private String description;
 }

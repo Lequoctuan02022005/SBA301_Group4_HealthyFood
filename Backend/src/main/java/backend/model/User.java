@@ -18,6 +18,7 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
+    // nho hash di nhe
     @Column(nullable = false)
     private String password;
 
@@ -25,6 +26,7 @@ public class User extends BaseEntity {
 
     private String phone;
 
+    //image url
     private String avatar;
 
     @Enumerated(EnumType.STRING)
@@ -35,6 +37,8 @@ public class User extends BaseEntity {
 
     private Boolean emailVerified;
 
+
+    // dang json string (BMI, di ung voi gi, stk ngan hang)
     @Column(columnDefinition = "TEXT")
     private String customerPersonalInfo;
 

@@ -1,4 +1,5 @@
 package backend.model;
+import backend.model.enums.CategoryStatus;
 import backend.model.enums.CategoryType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -20,4 +21,7 @@ public class Category extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private CategoryType type;
+    //Them enum cho status
+    @Column(nullable = false)
+    private CategoryStatus status;
 }

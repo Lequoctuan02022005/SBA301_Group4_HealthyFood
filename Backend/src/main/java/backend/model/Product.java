@@ -19,10 +19,6 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "seller_id")
     private User seller;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
     @Column(nullable = false)
     private String name;
 
@@ -42,6 +38,9 @@ public class Product extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ProductStatus status;
+
+    @OneToOne(mappedBy = "product")
+    private Promotion promotion;
 
     @Column(columnDefinition = "TEXT")
     private String reviewComment;
