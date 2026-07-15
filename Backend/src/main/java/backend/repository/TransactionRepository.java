@@ -1,4 +1,4 @@
-package backend.Repository;
+package backend.repository;
 
 import backend.model.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
