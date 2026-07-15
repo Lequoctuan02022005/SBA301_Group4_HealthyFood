@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -34,20 +35,29 @@ public class AdminUserService {
 
     }
     public void updateRole(Long id, Role role){
+
         User user = getUser(id);
+        if(user.getRole() == Role.ADMIN){
+            throw new RuntimeException("Cannot change Admin role");
+        }
+        if(role == Role.ADMIN){
+            throw new RuntimeException("Only one Admin is allowed");
+        }
         user.setRole(role);
         userRepository.save(user);
-
     }
-    public void updateStatus(Long id){
+    public void updateStatus(Long id) {
         User user = getUser(id);
-        if(user.getStatus() == UserStatus.ACTIVE){
+        if (user.getRole() == Role.ADMIN) {
+            throw new RuntimeException("Cannot change Admin status.");
+        }
+        if (user.getStatus() == UserStatus.ACTIVE) {
             user.setStatus(UserStatus.BANNED);
-        }else{
+        } else {
             user.setStatus(UserStatus.ACTIVE);
         }
         userRepository.save(user);
     }
-
 }
+
 

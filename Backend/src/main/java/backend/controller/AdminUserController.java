@@ -40,7 +40,4 @@ public class AdminUserController {
             @PathVariable Long id){
         service.updateStatus(id);
     }
-
-
-
 }
