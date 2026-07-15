@@ -6,21 +6,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AuthController {
-    @GetMapping
+    @GetMapping("/login")
     public void LogIn() {}
 
-    @PostMapping
+    @PostMapping("/login")
     public void LogIn(String username, String password) {}
 
-    @GetMapping
+    @GetMapping("/logout")
     public void LogOut() {}
 
-    @PostMapping
+    @PostMapping("/register")
     public void Register() {}
 
-    @PostMapping
+    @PostMapping("/verifyEmail")
     public void VerifyEmail() {}
 
-    @GetMapping
+    @GetMapping("/resetPassword")
     public void ResetPassword() {}
 }

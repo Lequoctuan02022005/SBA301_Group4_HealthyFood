@@ -1,12 +1,17 @@
 package backend.Controller;
 
 import backend.Repository.OrderRepository;
+import backend.Repository.TransactionRepository;
+import backend.Services.PaymentService;
 import backend.model.Order;
+import backend.model.Transaction;
 import backend.model.enums.OrderStatus;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,20 +19,28 @@ import java.util.Optional;
 @RequestMapping("/orders")
 public class OrderController {
     @Autowired
-    private OrderRepository repo;
+    private OrderRepository orderRepository;
+    @Autowired
+    private TransactionRepository transactionRepository;
+    private final PaymentService paymentService;
+
+    public OrderController(PaymentService paymentService) {
+        this.paymentService = paymentService;
+    }
+
 
     @GetMapping("")
-    public List<Order> getAll(){ return repo.findAll();}
+    public List<Order> getAll(){ return orderRepository.findAll();}
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getById(@PathVariable long id){
-        return repo.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return orderRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("")
     public ResponseEntity<Order> create(@RequestBody Order order){
          try{
-             repo.save(order);
+             orderRepository.save(order);
              return ResponseEntity.ok().build();
          }
          catch (Exception ex){
@@ -37,7 +50,7 @@ public class OrderController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancel(@PathVariable long id){
-        Optional<Order> optional = repo.findById(id);
+        Optional<Order> optional = orderRepository.findById(id);
 
         if(optional.isEmpty()) return ResponseEntity.notFound().build();
 
@@ -45,7 +58,7 @@ public class OrderController {
         if(order.getStatus()!= OrderStatus.PENDING) return ResponseEntity.badRequest().build();
         //Cancel
         order.setStatus(OrderStatus.CANCELLED);
-        repo.save(order);
+        orderRepository.save(order);
         return ResponseEntity.ok().build();
     }
 
@@ -63,4 +76,18 @@ public class OrderController {
 //                .orElse(ResponseEntity.<Void>notFound().build());
 //    }
 
+    @GetMapping("/{id}/checkout")
+    public ResponseEntity<String> checkOut(@PathVariable long id, HttpServletRequest request) throws UnsupportedEncodingException {
+        Optional<Order> optional = orderRepository.findById(id);
+        if(optional.isPresent()){
+            Order order = optional.get();
+            Transaction newTransaction = new Transaction();
+            newTransaction.setAmmount(order.getTotalAmount());
+            newTransaction.setIsOrder(true);
+            transactionRepository.save(newTransaction);
+            String paymentURL = paymentService.createVNPayPaymentUrl(newTransaction, request);
+            return ResponseEntity.ok(paymentURL);
+        }
+        return ResponseEntity.notFound().build();
+    }
 }

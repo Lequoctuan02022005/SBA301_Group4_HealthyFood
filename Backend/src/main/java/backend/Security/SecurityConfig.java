@@ -19,15 +19,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login","/register").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+                        //test
+                        .requestMatchers("/api/payment/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")   // chỗ này phải đúng action form
-                        .defaultSuccessUrl("/", true)
+                        .defaultSuccessUrl("/", false)
 //                        .successHandler(myAuthenticationSuccessHandler())// true = luôn luôn redirect về /home
                         .failureUrl("/login?error=true")
-                        .permitAll()
+//                        .permitAll()
                 );
 //                .formLogin(Customizer.withDefaults());
         return http.build();
