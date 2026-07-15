@@ -6,9 +6,6 @@ import Layout from './components/Layout';
 import ProductList from './pages/ProductList';
 import UploadProduct from './pages/UploadProduct';
 import Subscription from './pages/Subscription';
-
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminHome from "./pages/admin/AdminHome";
 import AccountList from "./pages/admin/AccountList";
@@ -33,6 +30,17 @@ function App() {
         theme="dark"
       />
       <Routes>
+        {/* Admin Routes with custom AdminLayout */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="adminhome" element={<AdminHome />} />
+          <Route path="users" element={<AccountList />} />
+          <Route path="users/create" element={<CreateAccount />} />
+          <Route path="users/:id" element={<AccountDetail />} />
+          <Route path="reports" element={<ReportList />} />
+          <Route path="reports/:id" element={<ReportDetail />} />
+        </Route>
+
+        {/* Existing Routes (Seller/Products) */}
         <Route path="/" element={<Layout />}>
           <Route index element={<Navigate to="/products" replace />} />
           <Route path="products" element={<ProductList />} />
@@ -42,25 +50,6 @@ function App() {
       </Routes>
     </Router>
   );
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* Redirect root to adminhome */}
-                <Route path="/" element={<Navigate to="/admin/adminhome" />} />
-
-                {/* Admin Routes with custom AdminLayout */}
-                <Route path="/admin" element={<AdminLayout />}>
-                    <Route path="adminhome" element={<AdminHome />} />
-                    <Route path="users" element={<AccountList />} />
-                    <Route path="users/create" element={<CreateAccount />} />
-                    <Route path="users/:id" element={<AccountDetail />} />
-                    <Route path="reports" element={<ReportList />} />
-                    <Route path="reports/:id" element={<ReportDetail />} />
-                </Route>
-
-            </Routes>
-        </BrowserRouter>
-    );
 }
 
 export default App;
