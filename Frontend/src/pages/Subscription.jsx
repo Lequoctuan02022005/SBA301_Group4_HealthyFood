@@ -9,7 +9,7 @@ import {
   HiOutlineTrophy,
 } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
-import { getSubscriptions, buySubscription } from '../services/api';
+import { getSubscriptions, createSubscriptionPayment } from '../services/api';
 import './Subscription.css';
 
 const mockPackages = [
@@ -115,10 +115,20 @@ const Subscription = () => {
   const handlePurchase = async (pkg) => {
     setPurchasing(true);
     try {
-      await buySubscription(2, pkg.id);
-      toast.success(`Successfully subscribed to ${pkg.name}!`);
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const userId = user?.userId || 2; // Mặc định là 2 nếu chưa đăng nhập
+
+      const res = await createSubscriptionPayment(userId, pkg.id);
+      if (res.data && res.data.paymentUrl) {
+        toast.info('Đang chuyển hướng tới cổng thanh toán VNPay...');
+        window.location.href = res.data.paymentUrl;
+      } else {
+        throw new Error('Payment URL not found');
+      }
     } catch (err) {
-      toast.error('Purchase failed. Please try again.');
+      toast.error('Không thể tạo yêu cầu thanh toán. Vui lòng thử lại!');
+      console.error(err);
     } finally {
       setPurchasing(false);
     }

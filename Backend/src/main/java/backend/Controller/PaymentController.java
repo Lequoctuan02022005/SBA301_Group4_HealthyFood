@@ -4,29 +4,23 @@ import backend.Config.VNPayConfig;
 import backend.Repository.OrderRepository;
 import backend.Repository.SubscriptionRepository;
 import backend.Repository.TransactionRepository;
+import backend.Repository.UserRepository;
 import backend.Services.PaymentService;
 import backend.model.Order;
 import backend.model.SubscriptionPackage;
 import backend.model.Transaction;
+import backend.model.User;
 import backend.model.enums.OrderStatus;
+import backend.model.enums.TransactionStatus;
+import backend.service.SubscriptionService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.Console;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.random.RandomGenerator;
+import java.util.*;
 
-@RestController()
+@RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
 
@@ -34,113 +28,170 @@ public class PaymentController {
     private final TransactionRepository transactionRepository;
     private final OrderRepository orderRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
+    private final SubscriptionService subscriptionService;
 
-    public PaymentController(PaymentService paymentService, TransactionRepository transactionRepository, OrderRepository orderRepository, SubscriptionRepository subscriptionRepository) {
+    public PaymentController(PaymentService paymentService,
+                             TransactionRepository transactionRepository,
+                             OrderRepository orderRepository,
+                             SubscriptionRepository subscriptionRepository,
+                             UserRepository userRepository,
+                             SubscriptionService subscriptionService) {
         this.paymentService = paymentService;
         this.transactionRepository = transactionRepository;
         this.orderRepository = orderRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.userRepository = userRepository;
+        this.subscriptionService = subscriptionService;
     }
 
+    // ════════════════════════════════════════════════════════════
+    //  CUSTOMER: Thanh toán đơn hàng (Order)
+    // ════════════════════════════════════════════════════════════
+    @PostMapping("/create_order_payment")
+    public ResponseEntity<?> createOrderPayment(
+            @RequestParam Long userId,
+            @RequestParam Long orderId,
+            HttpServletRequest request
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    @PostMapping("/create_payment")
-    public ResponseEntity<String> createPayment(HttpServletRequest request) throws UnsupportedEncodingException {
-        // authen, autho
-        //Test
-//        Order newOrder = new Order();
-//        newOrder.setId(Long.parseLong(VNPayConfig.getRandomNumber(8)));
-//        newOrder.setTotalAmount(BigDecimal.valueOf(1000000));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        Transaction newTransaction = new Transaction();
-//        newTransaction.setAmmount(BigDecimal.valueOf(2000000));
-//        newTransaction.setIsOrder(true);
-        transactionRepository.save(newTransaction);
+        Transaction transaction = Transaction.builder()
+                .user(user)
+                .ammount(order.getTotalAmount())
+                .referenceId(orderId)
+                .isOrder(true)
+                .status(TransactionStatus.PENDING)
+                .build();
 
-        String paymentUrl = paymentService.createVNPayPaymentUrl(newTransaction,request);
-        System.out.println(paymentUrl);
-        return ResponseEntity.ok(paymentUrl);
+        transactionRepository.save(transaction);
+
+        try {
+            String paymentUrl = paymentService.createVNPayPaymentUrl(transaction, request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("paymentUrl", paymentUrl);
+            response.put("transactionId", transaction.getId());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Failed to create payment URL: " + e.getMessage()));
+        }
     }
 
+    // ════════════════════════════════════════════════════════════
+    //  SELLER: Thanh toán gói Subscription
+    // ════════════════════════════════════════════════════════════
+    @PostMapping("/create_subscription_payment")
+    public ResponseEntity<?> createSubscriptionPayment(
+            @RequestParam Long userId,
+            @RequestParam Long packageId,
+            HttpServletRequest request
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        SubscriptionPackage subscriptionPackage = subscriptionRepository.findById(packageId)
+                .orElseThrow(() -> new RuntimeException("Subscription package not found"));
+
+        Transaction transaction = Transaction.builder()
+                .user(user)
+                .ammount(subscriptionPackage.getPrice())
+                .referenceId(packageId)
+                .isOrder(false)
+                .status(TransactionStatus.PENDING)
+                .build();
+
+        transactionRepository.save(transaction);
+
+        try {
+            String paymentUrl = paymentService.createVNPayPaymentUrl(transaction, request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("paymentUrl", paymentUrl);
+            response.put("transactionId", transaction.getId());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", "Failed to create payment URL: " + e.getMessage()));
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  VNPay Callback: Xử lý kết quả thanh toán
+    // ════════════════════════════════════════════════════════════
     @GetMapping("/vnpay_return")
-    public /*ResponseEntity<Map<String, String>>*/ String handleVNPayReturn(HttpServletRequest request){
-        Map<String, String> response = new HashMap<>();
-
-        Map<String,String> fields = new HashMap();
-        for (Enumeration params = request.getParameterNames(); params.hasMoreElements();) {
-            String fieldName = (String) params.nextElement();
+    public org.springframework.web.servlet.view.RedirectView handleVNPayReturn(HttpServletRequest request) {
+        // Thu thập tất cả tham số từ VNPay
+        Map<String, String> fields = new HashMap<>();
+        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
+            String fieldName = params.nextElement();
             String fieldValue = request.getParameter(fieldName);
-            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
+            if (fieldValue != null && !fieldValue.isEmpty()) {
                 fields.put(fieldName, fieldValue);
             }
         }
 
-        String vnp_SecureHash = request.getParameter("vnp_SecureHash");
+        String vnpSecureHash = request.getParameter("vnp_SecureHash");
         fields.remove("vnp_SecureHashType");
         fields.remove("vnp_SecureHash");
 
-        // Verify chữ ký
-        boolean valid = VNPayConfig.verifySignature(
-                fields,
-                vnp_SecureHash,
-                VNPayConfig.secretKey
-        );
+        // Verify chữ ký từ VNPay
+        boolean valid = VNPayConfig.verifySignature(fields, vnpSecureHash, VNPayConfig.secretKey);
 
         if (!valid) {
-            response.put("RspCode", "97");
-            response.put("Message", "Invalid Checksum");
-//            return ResponseEntity.ok(response);
-            return "invalid";
+            return new org.springframework.web.servlet.view.RedirectView("http://localhost:5173/payment-result?status=fail&error=checksum");
         }
 
-        //request.getParameterNames()
-//        String orderId = request.getParameterNames("vnp_TxnRef");
-//        String amount = request.getParameterNames("vnp_TxnRef");
         Long transactionId = Long.parseLong(fields.get("vnp_TxnRef"));
-        BigDecimal amount = BigDecimal.valueOf(Double.valueOf(fields.get("vnp_Amount"))/100) ;
+        String responseCode = fields.get("vnp_ResponseCode");
+        String transactionStatus = fields.get("vnp_TransactionStatus");
+        String vnpTransactionNo = fields.get("vnp_TransactionNo");
 
-        String responseCode = fields.get("vnp_ResponseCode").toString();
-        String transactionStatus = fields.get("vnp_TransactionStatus").toString();
+        Optional<Transaction> optional = transactionRepository.findById(transactionId);
 
-        // TODO:
-        // 1. Tìm Order trong DB
-        // 2. Kiểm tra amount
-        // 3. Kiểm tra trạng thái
+        if (optional.isEmpty()) {
+            return new org.springframework.web.servlet.view.RedirectView("http://localhost:5173/payment-result?status=fail&error=not_found");
+        }
 
-        if ("00".equals(responseCode)
-                && "00".equals(transactionStatus)) {
+        Transaction transaction = optional.get();
 
-            // orderService.markAsPaid(orderId);
-            Optional<Transaction> optional = transactionRepository.findById(transactionId);
-            if(optional.isPresent()){
-                Transaction transaction = optional.get();
-                if(transaction.getIsOrder()){
-                    Optional<Order> orderOptional = orderRepository.findById(transaction.getReferenceId());
-                    if(orderOptional.isPresent()){
-                        Order order = orderOptional.get();
-                        order.setStatus(OrderStatus.PAID);
-                    }
+        // Kiểm tra nếu giao dịch đã được xử lý rồi (tránh xử lý trùng)
+        if (transaction.getStatus() == TransactionStatus.SUCCESS) {
+            return new org.springframework.web.servlet.view.RedirectView("http://localhost:5173/payment-result?status=success&transactionId=" + transactionId);
+        }
+
+        if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
+            // ── THANH TOÁN THÀNH CÔNG ──
+            transaction.setStatus(TransactionStatus.SUCCESS);
+            transaction.setVnpTransactionNo(vnpTransactionNo);
+
+            if (Boolean.TRUE.equals(transaction.getIsOrder())) {
+                // Luồng 1: Customer mua hàng → đánh dấu Order là PAID
+                Optional<Order> orderOptional = orderRepository.findById(transaction.getReferenceId());
+                if (orderOptional.isPresent()) {
+                    Order order = orderOptional.get();
+                    order.setStatus(OrderStatus.PAID);
+                    orderRepository.save(order);
                 }
-                else{
-                    Optional<SubscriptionPackage> subOptional = subscriptionRepository.findById(transaction.getReferenceId());
-                    if(subOptional.isPresent()){
-                        SubscriptionPackage subsciption = subOptional.get();
-                        //Logic subcription
-                    }
-                }
+            } else {
+                // Luồng 2: Seller mua subscription → kích hoạt gói
+                Long userId = transaction.getUser().getId();
+                Long packageId = transaction.getReferenceId();
+                subscriptionService.buySubscription(userId, packageId);
             }
 
-            response.put("RspCode", "00");
-            response.put("Message", "Confirm Success");
+            transactionRepository.save(transaction);
+            return new org.springframework.web.servlet.view.RedirectView("http://localhost:5173/payment-result?status=success&transactionId=" + transactionId);
 
         } else {
-
-            // orderService.markAsFailed(orderId);
-
-            response.put("RspCode", "00");
-            response.put("Message", "Transaction Failed");
+            // ── THANH TOÁN THẤT BẠI ──
+            transaction.setStatus(TransactionStatus.FAILED);
+            transaction.setVnpTransactionNo(vnpTransactionNo);
+            transactionRepository.save(transaction);
+            return new org.springframework.web.servlet.view.RedirectView("http://localhost:5173/payment-result?status=fail&transactionId=" + transactionId);
         }
-        System.out.println("Payment: "+transactionId+" "+amount+" "+responseCode);
-//        return ResponseEntity.ok(response);
-        return "Payment: "+transactionId+" "+amount+" "+responseCode;
     }
 }
