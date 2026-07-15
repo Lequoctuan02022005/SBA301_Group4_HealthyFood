@@ -49,4 +49,7 @@ public class Product extends BaseEntity {
     private String reviewComment;
 
     private LocalDateTime reviewDate;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 }

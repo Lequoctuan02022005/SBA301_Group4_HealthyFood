@@ -5,11 +5,4 @@ export default axios.create({
     headers: {
         "Content-Type": "application/json"
     }
-});
-export const getUsers = () => axios.get(API);
-
-export const updateRole = (id, role) =>
-    axios.put(`${API}/${id}/role?role=${role}`);
-export const updateStatus = (id) => {
-    return axios.put(`${API}/${id}/status`);
-};
+});

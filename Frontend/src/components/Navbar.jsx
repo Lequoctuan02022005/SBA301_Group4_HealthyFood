@@ -17,6 +17,17 @@ function Navbar(){
 
                 </Link>
 
+                <div className="collapse navbar-collapse show">
+                    <ul className="navbar-nav ms-auto">
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/admin/users">Users</Link>
+                        </li>
+                        <li className="nav-item">
+                            <Link className="nav-link" to="/admin/reports">Reports</Link>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
 
         </nav>

@@ -14,6 +14,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
             String email,
             Pageable pageable
     );
-    Page<User> findByStatus(UserStatus status, Pageable pageable);
 
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u " +
+            "WHERE (:q IS NULL OR :q = '' " +
+            "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')) " +
+            "OR LOWER(u.fullName) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+            "AND (:status IS NULL OR u.status = :status)")
+    Page<User> search(@org.springframework.data.repository.query.Param("q") String q,
+                      @org.springframework.data.repository.query.Param("status") UserStatus status,
+                      Pageable pageable);
+
+    Page<User> findByStatus(UserStatus status, Pageable pageable);
+    boolean existsByEmail(String email);
+    long countByRole(backend.model.enums.Role role);
 }
