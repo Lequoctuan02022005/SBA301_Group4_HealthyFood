@@ -1,6 +1,6 @@
-package backend.Services;
+package backend.service;
 
-import backend.Config.VNPayConfig;
+import backend.config.VNPayConfig;
 import backend.model.Transaction;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Service;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static backend.Config.VNPayConfig.vnp_Command;
-import static backend.Config.VNPayConfig.vnp_Version;
+import static backend.config.VNPayConfig.vnp_Command;
+import static backend.config.VNPayConfig.vnp_Version;
 
 
 @Service

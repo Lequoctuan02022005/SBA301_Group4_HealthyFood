@@ -1,6 +1,6 @@
-package backend.Controller;
+package backend.controller;
 
-import backend.Repository.ReviewRepository;
+import backend.repository.ReviewRepository;
 import backend.model.Review;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

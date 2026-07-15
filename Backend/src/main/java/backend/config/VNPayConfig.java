@@ -1,4 +1,4 @@
-package backend.Config;
+package backend.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
