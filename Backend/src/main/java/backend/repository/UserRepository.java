@@ -7,7 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-@Repository
+import java.util.Optional;
+
 public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> findByFullNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String fullName,
@@ -24,7 +25,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
                       @org.springframework.data.repository.query.Param("status") UserStatus status,
                       Pageable pageable);
 
-    Page<User> findByStatus(UserStatus status, Pageable pageable);
     boolean existsByEmail(String email);
+
+    Optional<User> findByEmail(String email);
+    Page<User> findByStatus(UserStatus status, Pageable pageable);
     long countByRole(backend.model.enums.Role role);
 }
