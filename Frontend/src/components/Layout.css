@@ -1,0 +1,66 @@
+/* ========================================
+   Layout — Main App Shell
+   ======================================== */
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: #0a0e1a;
+}
+
+/* ---- Main Content Area ---- */
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  position: relative;
+  margin-left: 260px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.main-content.sidebar-collapsed {
+  margin-left: 80px;
+}
+
+.main-content::before {
+  content: '';
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 58, 237, 0.08), transparent 70%);
+  top: -200px;
+  right: -200px;
+  z-index: 0;
+  pointer-events: none;
+  animation: orbFloat 12s ease-in-out infinite alternate;
+}
+
+/* ---- Page Content ---- */
+
+.page-content {
+  flex: 1;
+  padding: 24px 32px;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- Ambient Orb Animation ---- */
+
+@keyframes orbFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-40px, 30px) scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(20px, -20px) scale(0.95);
+    opacity: 0.7;
+  }
+}
