@@ -1,4 +1,4 @@
-package backend.config;
+package backend.Config;
 
 import backend.model.Category;
 import backend.model.SubscriptionPackage;
@@ -7,9 +7,9 @@ import backend.model.enums.CategoryStatus;
 import backend.model.enums.CategoryType;
 import backend.model.enums.Role;
 import backend.model.enums.UserStatus;
-import backend.repository.CategoryRepository;
-import backend.repository.SubscriptionRepository;
-import backend.repository.UserRepository;
+import backend.Repository.CategoryRepository;
+import backend.Repository.SubscriptionRepository;
+import backend.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
