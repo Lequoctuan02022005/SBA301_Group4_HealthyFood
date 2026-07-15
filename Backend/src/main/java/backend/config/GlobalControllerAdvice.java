@@ -1,4 +1,4 @@
-package backend.config;
+package backend.Config;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

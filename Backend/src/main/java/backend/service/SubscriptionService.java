@@ -2,8 +2,8 @@ package backend.service;
 
 import backend.model.SubscriptionPackage;
 import backend.model.User;
-import backend.repository.SubscriptionRepository;
-import backend.repository.UserRepository;
+import backend.Repository.SubscriptionRepository;
+import backend.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
