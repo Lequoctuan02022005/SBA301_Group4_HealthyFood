@@ -1,4 +1,4 @@
-package backend.controller;
+package backend.controller.Admin;
 
 import backend.model.User;
 import backend.model.enums.Role;
