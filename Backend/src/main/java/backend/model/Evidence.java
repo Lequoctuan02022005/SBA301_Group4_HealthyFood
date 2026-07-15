@@ -29,7 +29,7 @@ public class Evidence extends BaseEntity {
     @Column(nullable = false)
     private EvidenceType type;
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false)
     private String url;
 
     @Column(nullable = false)
