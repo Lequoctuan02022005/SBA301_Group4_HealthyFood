@@ -1,8 +1,8 @@
 package backend.Controller;
 
-import backend.Repository.OrderRepository;
-import backend.Repository.TransactionRepository;
-import backend.Services.PaymentService;
+import backend.repository.OrderRepository;
+import backend.repository.TransactionRepository;
+import backend.service.PaymentService;
 import backend.model.Order;
 import backend.model.Transaction;
 import backend.model.enums.OrderStatus;

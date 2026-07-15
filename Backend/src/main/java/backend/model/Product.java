@@ -49,4 +49,7 @@ public class Product extends BaseEntity {
     private String reviewComment;
 
     private LocalDateTime reviewDate;
+
+    @OneToOne
+    private Category category;
 }

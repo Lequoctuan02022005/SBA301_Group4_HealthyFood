@@ -1,6 +1,6 @@
 package backend.Controller;
 
-import backend.Repository.CategoryRepository;
+import backend.repository.CategoryRepository;
 import backend.model.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
