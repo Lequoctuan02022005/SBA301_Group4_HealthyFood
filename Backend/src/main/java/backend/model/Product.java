@@ -38,6 +38,9 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal price;
 
+    @Column(nullable = false)
+    private String image;
+
     private Integer quantity;
 
     @Enumerated(EnumType.STRING)
