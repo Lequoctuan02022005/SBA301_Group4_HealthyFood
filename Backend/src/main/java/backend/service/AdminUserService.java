@@ -4,10 +4,16 @@ import backend.model.User;
 import backend.model.enums.Role;
 import backend.model.enums.UserStatus;
 import backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
 
+@Service
+@RequiredArgsConstructor
 public class AdminUserService {
+    @Autowired
     private UserRepository userRepository;
     public Page<User> getUsers(String keyword, Pageable pageable){
         if(keyword == null || keyword.isBlank()){

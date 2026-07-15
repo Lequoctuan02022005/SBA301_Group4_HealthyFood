@@ -8,11 +8,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/admin/users")
-@RequiredArgsConstructor
 public class AdminUserController {
-    private  AdminUserService service;
+
+    private final AdminUserService service;
+
     @GetMapping
 
     public Page<User> getUsers(
