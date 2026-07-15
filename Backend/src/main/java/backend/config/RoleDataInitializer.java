@@ -3,6 +3,7 @@ package backend.Config;
 import backend.model.Category;
 import backend.model.SubscriptionPackage;
 import backend.model.User;
+import backend.model.enums.CategoryStatus;
 import backend.model.enums.CategoryType;
 import backend.model.enums.Role;
 import backend.model.enums.UserStatus;
@@ -99,6 +100,7 @@ public class RoleDataInitializer implements CommandLineRunner {
                 .name(name)
                 .description(description)
                 .type(type)
+                .status(CategoryStatus.ACTIVATE)
                 .build();
     }
 

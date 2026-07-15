@@ -27,6 +27,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(auth -> auth
+                        // Permit tất cả endpoints trong AuthController
+                        .requestMatchers("/login", "/register", "/logout", "/verifyEmail", "/resetPassword").permitAll()
+                        // Yêu cầu role ADMIN cho các API admin
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         // Permit tất cả API và uploads cho frontend
                         .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
