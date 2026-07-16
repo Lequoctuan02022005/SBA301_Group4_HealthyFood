@@ -41,6 +41,7 @@ const Login = () => {
       const { token, userId, role, fullName } = res.data;
       
       localStorage.setItem('token', token);
+      console.log(token)
       localStorage.setItem('user', JSON.stringify({ userId, email, role, fullName }));
       
       toast.success(`Chào mừng ${fullName || email} quay trở lại!`);
