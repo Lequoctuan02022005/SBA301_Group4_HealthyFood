@@ -19,7 +19,7 @@ public class ProductController {
 
     @GetMapping("")
     public List<Product> getAll() {
-        return repo.findAll();
+        return repo.findByStatus(backend.model.enums.ProductStatus.PUBLISHED);
     }
 
     @GetMapping("/{id}")

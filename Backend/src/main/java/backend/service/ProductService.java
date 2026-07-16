@@ -9,6 +9,8 @@ import backend.repository.CategoryRepository;
 import backend.repository.ProductRepository;
 import backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +27,22 @@ public class ProductService {
     private final FileService fileService;
 
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            String role = auth.getAuthorities().stream()
+                    .map(granted -> granted.getAuthority())
+                    .findFirst().orElse("");
+            if (role.equals("ROLE_SELLER")) {
+                String email = auth.getName();
+                User seller = userRepository.findByEmail(email).orElse(null);
+                if (seller != null) {
+                    return productRepository.findBySeller(seller);
+                }
+            } else if (role.equals("ROLE_CUSTOMER")) {
+                return productRepository.findByStatus(ProductStatus.PUBLISHED);
+            }
+        }
+        return productRepository.findByStatus(ProductStatus.PUBLISHED);
     }
 
     public Product getProductById(Long id) {

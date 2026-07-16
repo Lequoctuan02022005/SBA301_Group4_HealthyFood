@@ -66,8 +66,11 @@ function ManagerDashboard() {
         </motion.div>
 
         <motion.div
-          className="dashboard-card disabled"
+          className="dashboard-card"
           variants={itemVariants}
+          onClick={() => navigate('/api/manager/categories')}
+          whileHover={{ y: -5, scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <div className="card-icon users">
             <HiOutlineUsers />

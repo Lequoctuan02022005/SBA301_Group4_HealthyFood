@@ -9,8 +9,9 @@ import {
   HiMinus,
   HiPlus,
   HiOutlineShoppingCart,
+  HiOutlineCreditCard,
 } from 'react-icons/hi2';
-import { getProductById, addToCart } from '../services/api';
+import { getProductById, addToCart, createOrder, checkoutOrder } from '../services/api';
 import CustomerHeader from '../components/CustomerHeader';
 import CustomerFooter from '../components/CustomerFooter';
 import './CustomerProductDetail.css';
@@ -23,6 +24,7 @@ const CustomerProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
+  const [buyingNow, setBuyingNow] = useState(false);
 
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
@@ -48,6 +50,50 @@ const CustomerProductDetail = () => {
   const handleDecrement = () => setQuantity((q) => Math.max(1, q - 1));
   const handleIncrement = () =>
     setQuantity((q) => Math.min(product?.quantity || 1, q + 1));
+
+  const handleBuyNow = async () => {
+    if (!user) {
+      toast.error('Bạn cần đăng nhập để thanh toán');
+      return;
+    }
+    setBuyingNow(true);
+    try {
+      const orderData = {
+        customer: { id: user.userId },
+        totalAmount: (product.price || 0) * quantity,
+        status: 'PENDING',
+        orderDetails: [
+          {
+            product: { id: product.id },
+            quantity: quantity,
+            price: product.price,
+          }
+        ],
+      };
+      
+      const orderRes = await createOrder(orderData);
+      const savedOrder = orderRes.data;
+      if (savedOrder && savedOrder.id) {
+        toast.info('Đang khởi tạo thanh toán...');
+        const payRes = await checkoutOrder(savedOrder.id);
+        const paymentUrl = payRes.data;
+        if (paymentUrl && typeof paymentUrl === 'string' && paymentUrl.startsWith('http')) {
+          window.location.href = paymentUrl;
+        } else {
+          toast.error('Không tìm thấy đường dẫn thanh toán. Vui lòng kiểm tra lại đơn hàng.');
+          navigate('/customer/orders');
+        }
+      } else {
+        toast.error('Không thể tạo đơn hàng. Vui lòng thử lại.');
+      }
+    } catch (error) {
+      const msg = error?.response?.data || error?.response?.data?.message || 'Thanh toán thất bại. Vui lòng thử lại.';
+      toast.error(typeof msg === 'string' ? msg : 'Thanh toán thất bại. Vui lòng thử lại.');
+      console.error(error);
+    } finally {
+      setBuyingNow(false);
+    }
+  };
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -208,10 +254,18 @@ const CustomerProductDetail = () => {
                   <button
                     className="add-to-cart-btn"
                     onClick={handleAddToCart}
-                    disabled={addingToCart || !product.quantity || product.quantity <= 0}
+                    disabled={addingToCart || buyingNow || !product.quantity || product.quantity <= 0}
                   >
                     <HiOutlineShoppingBag className="cart-icon" />
-                    {addingToCart ? 'Đang thêm...' : 'Thêm vào giỏ hàng'}
+                    {addingToCart ? 'Đang thêm...' : 'Thêm giỏ'}
+                  </button>
+                  <button
+                    className="buy-now-btn"
+                    onClick={handleBuyNow}
+                    disabled={addingToCart || buyingNow || !product.quantity || product.quantity <= 0}
+                  >
+                    <HiOutlineCreditCard className="cart-icon" />
+                    {buyingNow ? 'Đang xử lý...' : 'Thanh toán ngay'}
                   </button>
                   <button
                     className="view-cart-btn"

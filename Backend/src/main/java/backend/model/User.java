@@ -53,5 +53,6 @@ public class User extends BaseEntity {
     @Column(nullable = true)
     private LocalDateTime unbanAt;
 
-    private Integer violationCount;
+    @Builder.Default
+    private Integer violationCount = 0;
 }

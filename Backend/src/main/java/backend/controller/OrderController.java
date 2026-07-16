@@ -30,6 +30,8 @@ public class OrderController {
     private TransactionRepository transactionRepository;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private backend.repository.ProductRepository productRepository;
 
     private final PaymentService paymentService;
     private final CartRepository cartRepository;
@@ -60,12 +62,40 @@ public class OrderController {
     }
 
     @PostMapping("")
-    public ResponseEntity<Order> create(@RequestBody Order order){
+    public ResponseEntity<?> create(@RequestBody Order order){
          try{
-             orderRepository.save(order);
-             return ResponseEntity.ok().build();
+             if (order.getOrderDetails() == null || order.getOrderDetails().isEmpty()) {
+                 return ResponseEntity.badRequest().body("Đơn hàng không có sản phẩm nào.");
+             }
+             
+             // Validate and deduct stock
+             for (OrderDetail detail : order.getOrderDetails()) {
+                 if (detail.getProduct() == null || detail.getProduct().getId() == null) {
+                     return ResponseEntity.badRequest().body("Thông tin sản phẩm không hợp lệ.");
+                 }
+                 Product product = productRepository.findById(detail.getProduct().getId())
+                     .orElse(null);
+                 if (product == null) {
+                     return ResponseEntity.badRequest().body("Sản phẩm không tồn tại.");
+                 }
+                 if (product.getQuantity() == null || product.getQuantity() < detail.getQuantity()) {
+                     return ResponseEntity.badRequest().body("Sản phẩm '" + product.getName() + "' không đủ số lượng trong kho (Còn lại: " + (product.getQuantity() != null ? product.getQuantity() : 0) + ").");
+                 }
+                 // Deduct
+                 product.setQuantity(product.getQuantity() - detail.getQuantity());
+                 productRepository.save(product);
+                 
+                 // Associate detail
+                 detail.setProduct(product);
+                 detail.setOrder(order);
+             }
+             
+             order.setStatus(OrderStatus.PENDING);
+             Order savedOrder = orderRepository.save(order);
+             return ResponseEntity.ok(savedOrder);
          }
          catch (Exception ex){
+             ex.printStackTrace();
              return ResponseEntity.internalServerError().build();
          }
     }
@@ -80,6 +110,18 @@ public class OrderController {
         if(order.getStatus()!= OrderStatus.PENDING) return ResponseEntity.badRequest().build();
         //Cancel
         order.setStatus(OrderStatus.CANCELLED);
+        
+        // Refund stock
+        if (order.getOrderDetails() != null) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                Product product = detail.getProduct();
+                if (product != null) {
+                    product.setQuantity(product.getQuantity() + detail.getQuantity());
+                    productRepository.save(product);
+                }
+            }
+        }
+        
         orderRepository.save(order);
         return ResponseEntity.ok().build();
     }

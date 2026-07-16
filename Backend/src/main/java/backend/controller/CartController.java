@@ -1,6 +1,6 @@
 package backend.controller;
 
-import backend.Security.JwtUtil;
+import backend.security.JwtUtil;
 import backend.dto.AddCartDto;
 import backend.model.User;
 import backend.repository.CartRepository;

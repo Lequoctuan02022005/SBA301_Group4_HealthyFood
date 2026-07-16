@@ -8,17 +8,8 @@ import {
 } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createProduct, getProductById, updateProduct } from '../services/api';
+import { createProduct, getProductById, updateProduct, getCategories } from '../services/api';
 import './UploadProduct.css';
-
-const categories = [
-  { id: 1, name: 'Organic Foods' },
-  { id: 2, name: 'Protein & Supplements' },
-  { id: 3, name: 'Fresh Fruits & Vegetables' },
-  { id: 4, name: 'Healthy Snacks' },
-  { id: 5, name: 'Beverages' },
-  { id: 6, name: 'Dairy & Alternatives' },
-];
 
 const UploadProduct = () => {
   const navigate = useNavigate();
@@ -28,6 +19,25 @@ const UploadProduct = () => {
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
   const loggedInSellerId = user?.userId?.toString() || '2';
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+        const activeProductCategories = data.filter(
+          c => (c.status === 'ACTIVATE' || !c.status) && c.type === 'PRODUCT'
+        );
+        setCategories(activeProductCategories);
+      } catch (err) {
+        console.error("Failed to load categories", err);
+        toast.error("Không thể tải danh sách danh mục");
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',

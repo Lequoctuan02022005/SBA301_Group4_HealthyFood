@@ -24,6 +24,7 @@ import ReportDetail from "./pages/admin/ReportDetail";
 import ManagerDashboard from './pages/manager/ManagerDashboard.jsx';
 import PendingProducts from './pages/manager/PendingProducts.jsx';
 import ProductDetail from './pages/manager/ProductDetail.jsx';
+import CategoryManagement from './pages/manager/CategoryManagement.jsx';
 // import ManagerDashboard from './pages/ManagerDashboard';
 // import PendingProducts from './pages/PendingProducts';
 // import ProductDetail from './pages/ProductDetail';
@@ -209,6 +210,7 @@ function App() {
           }
         >
           <Route path="api/manager" element={<ManagerDashboard />} />
+          <Route path="api/manager/categories" element={<CategoryManagement />} />
           <Route path="api/manager/pending-product" element={<PendingProducts />} />
           <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>

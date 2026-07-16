@@ -94,4 +94,10 @@ export const publishProduct = (id) => api.patch(`/manager/products/${id}/publish
 export const hideProduct = (id, reviewComment) =>
   api.patch(`/manager/products/${id}/hide?reviewComment=${encodeURIComponent(reviewComment)}`);
 
+// ─── Manager Categories ───────────────────────────────────────────
+export const getManagerCategories = () => api.get('/manager/categories');
+export const createManagerCategory = (data) => api.post('/manager/categories', data);
+export const updateManagerCategory = (id, data) => api.put(`/manager/categories/${id}`, data);
+export const deleteManagerCategory = (id) => api.delete(`/manager/categories/${id}`);
+
 export default api;

@@ -14,6 +14,44 @@ import java.util.List;
 public class ManagerController {
 
     private final ProductService productService;
+    private final backend.repository.CategoryRepository categoryRepository;
+
+    // Category CRUD endpoints
+    @GetMapping("/categories")
+    public ResponseEntity<List<backend.model.Category>> getAllCategories() {
+        return ResponseEntity.ok(categoryRepository.findAll());
+    }
+
+    @PostMapping("/categories")
+    public ResponseEntity<backend.model.Category> createCategory(@RequestBody backend.model.Category category) {
+        if (category.getStatus() == null) {
+            category.setStatus(backend.model.enums.CategoryStatus.ACTIVATE);
+        }
+        backend.model.Category saved = categoryRepository.save(category);
+        return ResponseEntity.ok(saved);
+    }
+
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<backend.model.Category> updateCategory(@PathVariable Long id, @RequestBody backend.model.Category categoryDetails) {
+        backend.model.Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        category.setName(categoryDetails.getName());
+        category.setDescription(categoryDetails.getDescription());
+        category.setType(categoryDetails.getType());
+        if (categoryDetails.getStatus() != null) {
+            category.setStatus(categoryDetails.getStatus());
+        }
+        backend.model.Category updated = categoryRepository.save(category);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
+        backend.model.Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        categoryRepository.delete(category);
+        return ResponseEntity.ok().build();
+    }
 
     // Product management endpoints
     @GetMapping("/products/pending")

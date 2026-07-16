@@ -12,6 +12,9 @@ const PaymentResult = () => {
   const [transactionId, setTransactionId] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
   useEffect(() => {
     const payStatus = searchParams.get('status');
     const txnId = searchParams.get('transactionId');
@@ -74,8 +77,8 @@ const PaymentResult = () => {
                 <strong>#{transactionId}</strong>
               </div>
             )}
-            <button className="home-btn success-btn" onClick={() => navigate('/products')}>
-              Quay lại Bảng điều khiển
+            <button className="home-btn success-btn" onClick={() => navigate(user?.role === 'CUSTOMER' ? '/customer/orders' : '/products')}>
+              {user?.role === 'CUSTOMER' ? 'Xem đơn hàng của bạn' : 'Quay lại Bảng điều khiển'}
             </button>
           </div>
         ) : (
@@ -96,10 +99,16 @@ const PaymentResult = () => {
               </div>
             )}
             <div className="btn-group">
-              <button className="home-btn fail-btn" onClick={() => navigate('/subscription')}>
-                Thử lại thanh toán
-              </button>
-              <button className="back-link" onClick={() => navigate('/products')}>
+              {user?.role === 'CUSTOMER' ? (
+                <button className="home-btn fail-btn" onClick={() => navigate('/customer/orders')}>
+                  Xem đơn hàng của bạn
+                </button>
+              ) : (
+                <button className="home-btn fail-btn" onClick={() => navigate('/subscription')}>
+                  Thử lại thanh toán
+                </button>
+              )}
+              <button className="back-link" onClick={() => navigate(user?.role === 'CUSTOMER' ? '/customer-home' : '/products')}>
                 <HiOutlineArrowLeft /> Về Trang chủ
               </button>
             </div>

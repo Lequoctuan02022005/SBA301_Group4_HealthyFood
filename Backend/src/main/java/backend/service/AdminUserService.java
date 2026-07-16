@@ -112,6 +112,7 @@ public class AdminUserService {
         user.setRole(newRole);
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerified(true);
+        user.setViolationCount(0);
         return userRepository.save(user);
     }
 }
