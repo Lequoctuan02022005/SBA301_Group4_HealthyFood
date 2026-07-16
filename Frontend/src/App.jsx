@@ -21,9 +21,12 @@ import AccountDetail from "./pages/admin/AccountDetail";
 import CreateAccount from "./pages/admin/CreateAccount";
 import ReportList from "./pages/admin/ReportList";
 import ReportDetail from "./pages/admin/ReportDetail";
-import ManagerDashboard from './pages/ManagerDashboard';
-import PendingProducts from './pages/PendingProducts';
-import ProductDetail from './pages/ProductDetail';
+import ManagerDashboard from './pages/manager/ManagerDashboard.jsx';
+import PendingProducts from './pages/manager/PendingProducts.jsx';
+import ProductDetail from './pages/manager/ProductDetail.jsx';
+// import ManagerDashboard from './pages/ManagerDashboard';
+// import PendingProducts from './pages/PendingProducts';
+// import ProductDetail from './pages/ProductDetail';
 import AIChatbox from './components/AIChatbox';
 
 
@@ -31,7 +34,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
   const location = useLocation();
-  
+
   let user = null;
   try {
     user = userStr ? JSON.parse(userStr) : null;
@@ -141,29 +144,29 @@ function App() {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/customer/product/:id" 
+        <Route
+          path="/customer/product/:id"
           element={
             <ProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerProductDetail />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/customer/cart" 
+        <Route
+          path="/customer/cart"
           element={
             <ProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerCart />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/customer/orders" 
+        <Route
+          path="/customer/orders"
           element={
             <ProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerOrderList />
             </ProtectedRoute>
-          } 
+          }
         />
 
         {/* Admin Routes with custom AdminLayout */}

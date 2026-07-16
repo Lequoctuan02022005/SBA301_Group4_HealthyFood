@@ -4,7 +4,7 @@ import { HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-import { getPendingProducts } from '../services/api';
+import { getPendingProducts } from '../../services/api.js';
 import './PendingProductList.css';
 
 const containerVariants = {

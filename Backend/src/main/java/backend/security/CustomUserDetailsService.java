@@ -1,4 +1,4 @@
-package backend.Security;
+package backend.security;
 
 import backend.repository.UserRepository;
 import backend.model.User;

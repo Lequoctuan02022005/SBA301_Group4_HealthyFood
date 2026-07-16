@@ -1,6 +1,6 @@
 package backend.controller;
 
-import backend.Security.JwtUtil;
+import backend.security.JwtUtil;
 import backend.dto.CartItemIds;
 import backend.model.*;
 import backend.repository.CartRepository;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
