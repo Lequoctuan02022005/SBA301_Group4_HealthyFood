@@ -1,4 +1,4 @@
-package backend.controller;
+package backend.Controller;
 
 import backend.repository.ProductRepository;
 import backend.model.Product;
