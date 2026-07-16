@@ -1,7 +1,10 @@
 package backend.controller;
 
+import backend.Security.JwtUtil;
+import backend.model.User;
 import backend.repository.CartRepository;
 import backend.model.Cart;
+import backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +16,11 @@ import java.util.List;
 public class CartController {
     @Autowired
     private CartRepository repo;
+    @Autowired
+    private UserRepository userRepository;
+
+//    @Autowired
+//    private JwtUtil jwtUtil;
 
     @GetMapping("")
     public List<Cart> getAll(){
@@ -20,8 +28,16 @@ public class CartController {
     }
 
     @PostMapping("")
-    public Cart create(@RequestBody Cart cart){
+    public Cart create(@RequestBody Cart cart, Long userId){
+        User user = userRepository.findById(userId).orElse(new User());
+        cart.setCustomer(user);
         return repo.save(cart);
+    }
+
+    @GetMapping("/test")
+    public String test(){
+
+        return "Testing";
     }
 
     @PostMapping("/{id}")
