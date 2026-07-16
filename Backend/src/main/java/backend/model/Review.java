@@ -22,6 +22,6 @@ public class Review extends BaseEntity {
 
     private Integer rating;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String comment;
 }

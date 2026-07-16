@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout';
@@ -11,6 +11,9 @@ import Register from './pages/Register';
 import PaymentResult from './pages/PaymentResult';
 import ForgotPassword from './pages/ForgotPassword';
 import CustomerHome from './pages/CustomerHome';
+import CustomerProductDetail from './pages/CustomerProductDetail';
+import CustomerCart from './pages/CustomerCart';
+import CustomerOrderList from './pages/CustomerOrderList';
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminHome from "./pages/admin/AdminHome";
 import AccountList from "./pages/admin/AccountList";
@@ -21,11 +24,17 @@ import ReportDetail from "./pages/admin/ReportDetail";
 import ManagerDashboard from './pages/manager/ManagerDashboard.jsx';
 import PendingProducts from './pages/manager/PendingProducts.jsx';
 import ProductDetail from './pages/manager/ProductDetail.jsx';
+// import ManagerDashboard from './pages/ManagerDashboard';
+// import PendingProducts from './pages/PendingProducts';
+// import ProductDetail from './pages/ProductDetail';
+import AIChatbox from './components/AIChatbox';
+
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
-  
+  const location = useLocation();
+
   let user = null;
   try {
     user = userStr ? JSON.parse(userStr) : null;
@@ -43,9 +52,21 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       if (user.role === 'ADMIN') return <Navigate to="/admin/adminhome" replace />;
       if (user.role === 'CUSTOMER') return <Navigate to="/customer-home" replace />;
       if (user.role === 'MANAGER' || user.role === 'NUTRIENT') return <Navigate to="/api/manager" replace />;
+      if (user.role === 'SELLER') {
+        if (user.hasActiveSubscription) {
+          return <Navigate to="/products" replace />;
+        } else {
+          return <Navigate to="/subscription" replace />;
+        }
+      }
       return <Navigate to="/products" replace />;
     }
     return <Navigate to="/login" replace />;
+  }
+
+  // Nếu là seller nhưng chưa mua gói dịch vụ hoạt động, bắt buộc chuyển sang /subscription
+  if (user && user.role === 'SELLER' && !user.hasActiveSubscription && location.pathname !== '/subscription' && location.pathname !== '/payment-result') {
+    return <Navigate to="/subscription" replace />;
   }
 
   return children;
@@ -76,6 +97,14 @@ const RootRedirect = () => {
 
   if (user.role === 'MANAGER' || user.role === 'NUTRIENT') {
     return <Navigate to="/api/manager" replace />;
+  }
+
+  if (user.role === 'SELLER') {
+    if (user.hasActiveSubscription) {
+      return <Navigate to="/products" replace />;
+    } else {
+      return <Navigate to="/subscription" replace />;
+    }
   }
 
   return <Navigate to="/products" replace />;
@@ -115,6 +144,30 @@ function App() {
             </ProtectedRoute>
           } 
         />
+        <Route
+          path="/customer/product/:id"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerProductDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/cart"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerCart />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/orders"
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerOrderList />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Admin Routes with custom AdminLayout */}
         <Route 
@@ -142,6 +195,7 @@ function App() {
           }
         >
           <Route path="products" element={<ProductList />} />
+          <Route path="products/edit/:id" element={<UploadProduct />} />
           <Route path="upload" element={<UploadProduct />} />
           <Route path="subscription" element={<Subscription />} />
         </Route>
@@ -159,6 +213,7 @@ function App() {
           <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>
       </Routes>
+      <AIChatbox />
     </Router>
   );
 }

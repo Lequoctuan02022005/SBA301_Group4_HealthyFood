@@ -4,6 +4,7 @@ import backend.model.Category;
 import backend.model.Product;
 import backend.model.User;
 import backend.model.enums.ProductStatus;
+import backend.model.enums.Role;
 import backend.repository.CategoryRepository;
 import backend.repository.ProductRepository;
 import backend.repository.UserRepository;
@@ -50,6 +51,15 @@ public class ProductService {
         User seller = userRepository.findById(sellerId)
                 .orElseThrow(() -> new RuntimeException("Seller not found"));
 
+        boolean hasActiveSubscription = seller.getRole() == Role.SELLER
+                && seller.getSubscriptionPackage() != null
+                && seller.getExpireAt() != null
+                && seller.getExpireAt().isAfter(java.time.LocalDateTime.now());
+
+        if (!hasActiveSubscription) {
+            throw new RuntimeException("Seller subscription has expired or is inactive. Please subscribe to list products.");
+        }
+
         String imageName = fileService.uploadImage(image);
 
         Product product = Product.builder()
@@ -78,9 +88,11 @@ public class ProductService {
         product.setIngredient(request.getIngredient());
         product.setNutritionInfo(request.getNutritionInfo());
         product.setPrice(request.getPrice());
-        product.setImage(request.getImage());
+        if (request.getImage() != null && !request.getImage().trim().isEmpty()) {
+            product.setImage(request.getImage());
+        }
         product.setQuantity(request.getQuantity());
-        product.setStatus(request.getStatus());
+        product.setStatus(ProductStatus.PENDING_MANAGER);
         product.setReviewComment(request.getReviewComment());
         product.setReviewDate(request.getReviewDate());
 
@@ -90,6 +102,40 @@ public class ProductService {
 
             product.setCategory(category);
         }
+
+        return productRepository.save(product);
+    }
+
+    public Product updateProduct(
+            Long id,
+            MultipartFile image,
+            String name,
+            String description,
+            String ingredient,
+            String nutritionInfo,
+            BigDecimal price,
+            Integer quantity,
+            Long categoryId
+    ) {
+        Product product = getProductById(id);
+        product.setName(name);
+        product.setDescription(description);
+        product.setIngredient(ingredient);
+        product.setNutritionInfo(nutritionInfo);
+        product.setPrice(price);
+        product.setQuantity(quantity);
+
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        product.setCategory(category);
+
+        if (image != null && !image.isEmpty()) {
+            String imageName = fileService.uploadImage(image);
+            product.setImage(imageName);
+        }
+
+        // Khi chỉnh sửa sản phẩm, tự động chuyển về trạng thái chờ duyệt
+        product.setStatus(ProductStatus.PENDING_MANAGER);
 
         return productRepository.save(product);
     }

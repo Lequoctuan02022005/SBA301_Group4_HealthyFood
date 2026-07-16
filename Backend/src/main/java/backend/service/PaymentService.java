@@ -28,7 +28,7 @@ public class PaymentService {
         long amount = (long)(transaction.getAmmount().doubleValue()*100);
 //        String bankCode = req.getParameter("bankCode");
 
-        String vnp_TxnRef = transaction.getId().toString();
+        String vnp_TxnRef = transaction.getId().toString() + "_" + VNPayConfig.getRandomNumber(6);
         String vnp_IpAddr = VNPayConfig.getIpAddress(req);
 
         String vnp_TmnCode = VNPayConfig.vnp_TmnCode;

@@ -26,7 +26,7 @@ public class VNPayConfig {
     public static String secretKey = "I6FB1Q975XMUCAZSFG59ZFCLXTQTPPBW";
     public static String vnp_ApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
     public static String vnp_Version = "2.1.0";
-    public static String vnp_Command = "querydr";
+    public static String vnp_Command = "pay";
 
     public static String md5(String message) {
         String digest = null;

@@ -6,6 +6,7 @@ import backend.repository.SubscriptionRepository;
 import backend.repository.TransactionRepository;
 import backend.repository.UserRepository;
 import backend.service.PaymentService;
+import backend.service.SubscriptionService;
 import backend.model.Order;
 import backend.model.SubscriptionPackage;
 import backend.model.Transaction;
@@ -38,19 +39,22 @@ public class PaymentController {
     private final OrderRepository orderRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
+    private final SubscriptionService subscriptionService;
 
     public PaymentController(
             PaymentService paymentService,
             TransactionRepository transactionRepository,
             OrderRepository orderRepository,
             SubscriptionRepository subscriptionRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            SubscriptionService subscriptionService
     ) {
         this.paymentService = paymentService;
         this.transactionRepository = transactionRepository;
         this.orderRepository = orderRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.userRepository = userRepository;
+        this.subscriptionService = subscriptionService;
     }
 
 
@@ -78,7 +82,7 @@ public class PaymentController {
         for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
             String fieldName = params.nextElement();
             String fieldValue = request.getParameter(fieldName);
-            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
+            if ((fieldValue != null) && (!fieldValue.isEmpty()) && fieldName.startsWith("vnp_")) {
                 fields.put(fieldName, fieldValue);
             }
         }
@@ -106,7 +110,8 @@ public class PaymentController {
                     .build();
         }
 
-        Long transactionId = Long.parseLong(fields.get("vnp_TxnRef"));
+        String txnRef = fields.get("vnp_TxnRef");
+        Long transactionId = txnRef.contains("_") ? Long.parseLong(txnRef.split("_")[0]) : Long.parseLong(txnRef);
         String responseCode = fields.get("vnp_ResponseCode");
         String transactionStatus = fields.get("vnp_TransactionStatus");
 
@@ -132,7 +137,7 @@ public class PaymentController {
                     Optional<SubscriptionPackage> subOptional = subscriptionRepository.findById(transaction.getReferenceId());
                     if (subOptional.isPresent()) {
                         SubscriptionPackage subPackage = subOptional.get();
-                        // Logic update seller package status can be added here
+                        subscriptionService.buySubscription(transaction.getUser().getId(), subPackage.getId());
                     }
                 }
             } else {
