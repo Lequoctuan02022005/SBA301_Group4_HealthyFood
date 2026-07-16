@@ -1,0 +1,23 @@
+# Task List: Manager Product Approval Workflow
+
+- [ ] Clarify and set up routes in `App.jsx` for Manager Dashboard, Pending Product List, and Product Details
+  - [ ] Add `/api/manager` route for `ManagerDashboard` dashboard `ManagerDashboard.jsx` page
+  - [ ] Add `/api/manager/pending-product` route for `PendingProducts` page (displays product list)
+  - [ ] Add `/api/manager/pending-product/:id` route for `ProductDetail` review details page
+  - [ ] Add Manager Dashboard option to Sidebar pointing to `/api/manager`
+- [x] Implement the Manager Dashboard (`/api/manager` - `ManagerDashboard.jsx`)
+  - [x] Create a dashboard with options/links including a `PendingProducts` tab/navigation option
+  - [x] Clicking on `PendingProducts` navigates to `/api/manager/pending-product`
+- [x] Implement the Pending Products page (`/api/manager/pending-product` - `PendingProducts.jsx`)
+  - [x] Display list of pending products from backend API
+  - [x] For each product, show a `ViewDetail` button
+  - [x] Clicking `ViewDetail` navigates to `/api/manager/pending-product/{id}`
+- [x] Implement the View Product Detail page (`/api/manager/pending-product/:id` - `ProductDetail.jsx`)
+  - [x] Retrieve product details via backend API `/api/manager/products/{id}` on mount
+  - [x] Display full product info: Name, Image, Category, Price, Quantity, Seller, Ingredients, Nutrition Info, Description
+  - [x] Add "Approve" button: call `approveProduct(id)` API, toast success, navigate back to `/api/manager/pending-product`
+  - [x] Add "Reject" button: prompt for rejection comment, call `rejectProduct(id, comment)` API, toast success, navigate back to `/api/manager/pending-product`
+- [ ] End-to-end flow verification
+  - [ ] Verify database state changes (status updates to `PUBLISHED` or `REJECTED`)
+  - [ ] Verify UI navigations and toast alerts
+- each jsx file must have .css file to style it

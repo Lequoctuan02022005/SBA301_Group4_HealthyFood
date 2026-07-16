@@ -6,6 +6,9 @@ import Layout from './components/Layout';
 import ProductList from './pages/ProductList';
 import UploadProduct from './pages/UploadProduct';
 import Subscription from './pages/Subscription';
+import ManagerDashboard from './pages/ManagerDashboard';
+import PendingProducts from './pages/PendingProducts';
+import ProductDetail from './pages/ProductDetail';
 
 function App() {
   return (
@@ -28,6 +31,9 @@ function App() {
           <Route path="products" element={<ProductList />} />
           <Route path="upload" element={<UploadProduct />} />
           <Route path="subscription" element={<Subscription />} />
+          <Route path="api/manager" element={<ManagerDashboard />} />
+          <Route path="api/manager/pending-product" element={<PendingProducts />} />
+          <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>
       </Routes>
     </Router>

@@ -7,13 +7,21 @@ const Header = () => {
   const location = useLocation();
 
   const getPageTitle = () => {
-    switch (location.pathname) {
+    const path = location.pathname;
+    if (path.match(/^\/api\/manager\/pending-product\/\d+/)) {
+      return 'Review Product Detail';
+    }
+    switch (path) {
       case '/products':
         return 'Product Management';
       case '/upload':
         return 'Upload New Product';
       case '/subscription':
         return 'Your Subscription';
+      case '/api/manager':
+        return 'Manager Dashboard';
+      case '/api/manager/pending-product':
+        return 'Pending Products';
       default:
         return 'Dashboard';
     }

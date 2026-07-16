@@ -31,7 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:5173",  // Vite dev server
                         "http://localhost:3000"   // CRA fallback
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
                 .allowCredentials(true);
     }

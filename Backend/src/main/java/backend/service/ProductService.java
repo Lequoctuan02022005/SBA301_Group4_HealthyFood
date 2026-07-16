@@ -100,4 +100,41 @@ public class ProductService {
 
         productRepository.delete(product);
     }
+
+    // Manager operations
+    public List<Product> getPendingProducts() {
+        return productRepository.findByStatus(ProductStatus.PENDING_MANAGER);
+    }
+
+    public Product getProductDetail(Long id) {
+        return getProductById(id);
+    }
+
+    public Product approveProduct(Long id) {
+        Product product = getProductById(id);
+        product.setStatus(ProductStatus.PUBLISHED);
+        return productRepository.save(product);
+    }
+
+    public Product rejectProduct(Long id, String reviewComment) {
+        Product product = getProductById(id);
+        product.setStatus(ProductStatus.REJECTED);
+        product.setReviewComment(reviewComment);
+        product.setReviewDate(java.time.LocalDateTime.now());
+        return productRepository.save(product);
+    }
+
+    public Product publishProduct(Long id) {
+        Product product = getProductById(id);
+        product.setStatus(ProductStatus.PUBLISHED);
+        return productRepository.save(product);
+    }
+
+    public Product hideProduct(Long id, String reviewComment) {
+        Product product = getProductById(id);
+        product.setStatus(ProductStatus.HIDDEN);
+        product.setReviewComment(reviewComment);
+        product.setReviewDate(java.time.LocalDateTime.now());
+        return productRepository.save(product);
+    }
 }
