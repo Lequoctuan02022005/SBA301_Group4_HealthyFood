@@ -14,7 +14,11 @@ const Header = () => {
   const role = user?.role || 'CUSTOMER';
 
   const getPageTitle = () => {
-    switch (location.pathname) {
+    const path = location.pathname;
+    if (path.match(/^\/api\/manager\/pending-product\/\d+/)) {
+      return 'Review Product Detail';
+    }
+    switch (path) {
       case '/products':
         return 'Product Management';
       case '/upload':
@@ -23,6 +27,10 @@ const Header = () => {
         return 'Your Subscription';
       case '/payment-result':
         return 'Payment Confirmation';
+      case '/api/manager':
+        return 'Manager Dashboard';
+      case '/api/manager/pending-product':
+        return 'Pending Products';
       default:
         return 'Dashboard';
     }
@@ -59,7 +67,7 @@ const Header = () => {
         </button>
 
         <div className="avatar-container" style={{ position: 'relative' }}>
-          <div 
+          <div
             className="header-avatar"
             onClick={() => setDropdownOpen(!dropdownOpen)}
             title={`Hi, ${fullName}`}

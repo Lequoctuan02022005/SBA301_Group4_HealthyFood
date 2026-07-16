@@ -70,7 +70,8 @@ function ProductList() {
         setProducts(res.data);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error fetching products:', error);
         toast.error('Failed to load products');
         setLoading(false);
       });

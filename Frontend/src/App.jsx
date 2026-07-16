@@ -17,7 +17,9 @@ import AccountDetail from "./pages/admin/AccountDetail";
 import CreateAccount from "./pages/admin/CreateAccount";
 import ReportList from "./pages/admin/ReportList";
 import ReportDetail from "./pages/admin/ReportDetail";
-
+import ManagerDashboard from './pages/ManagerDashboard';
+import PendingProducts from './pages/PendingProducts';
+import ProductDetail from './pages/ProductDetail';
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -61,6 +63,9 @@ function App() {
           <Route path="products" element={<ProductList />} />
           <Route path="upload" element={<UploadProduct />} />
           <Route path="subscription" element={<Subscription />} />
+          <Route path="api/manager" element={<ManagerDashboard />} />
+          <Route path="api/manager/pending-product" element={<PendingProducts />} />
+          <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>
       </Routes>
     </Router>
