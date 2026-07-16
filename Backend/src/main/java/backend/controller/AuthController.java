@@ -1,4 +1,4 @@
-package backend.Controller;
+package backend.controller;
 
 import backend.Repository.UserRepository;
 import backend.Security.JwtUtil;

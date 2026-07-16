@@ -5,6 +5,8 @@ const api = axios.create({
   baseURL: 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
+    'user_type': 'admin', 
+    'user_id': '1', 
   },
 });
 

@@ -1,6 +1,6 @@
 package backend.Controller;
 
-import backend.Repository.ProductRepository;
+import backend.repository.ProductRepository;
 import backend.model.Product;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package backend.Config;
+package backend.config;
 
 import backend.Security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;

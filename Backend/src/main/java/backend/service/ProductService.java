@@ -4,9 +4,9 @@ import backend.model.Category;
 import backend.model.Product;
 import backend.model.User;
 import backend.model.enums.ProductStatus;
-import backend.Repository.CategoryRepository;
-import backend.Repository.ProductRepository;
-import backend.Repository.UserRepository;
+import backend.repository.CategoryRepository;
+import backend.repository.ProductRepository;
+import backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -93,7 +93,7 @@ public class ProductService {
 
         return productRepository.save(product);
     }
-    
+
     public void deleteProduct(Long id) {
 
         Product product = getProductById(id);

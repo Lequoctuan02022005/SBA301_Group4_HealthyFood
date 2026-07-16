@@ -1,2 +1,4 @@
-/* App-level styles are handled by individual page/component CSS files */
-/* Global design system is in index.css */
+/* Base container styles for the admin dashboard */
+.container {
+  max-width: 1200px;
+}
