@@ -1,6 +1,6 @@
 package backend.Security;
 
-import backend.Repository.UserRepository;
+import backend.repository.UserRepository;
 import backend.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

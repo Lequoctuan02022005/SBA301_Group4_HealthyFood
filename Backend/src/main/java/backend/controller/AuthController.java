@@ -1,6 +1,6 @@
 package backend.controller;
 
-import backend.Repository.UserRepository;
+import backend.repository.UserRepository;
 import backend.Security.JwtUtil;
 import backend.dto.AuthResponse;
 import backend.dto.LoginRequest;

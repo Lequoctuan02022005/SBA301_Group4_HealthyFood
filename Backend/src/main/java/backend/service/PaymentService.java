@@ -54,10 +54,25 @@ public class PaymentService {
 //        } else {
 //            vnp_Params.put("vnp_Locale", "vn");
 //        }
-        //alway vn
         vnp_Params.put("vnp_Locale", "vn");
 
-        vnp_Params.put("vnp_ReturnUrl", VNPayConfig.vnp_ReturnUrl);
+        String frontendOrigin = req.getHeader("Origin");
+        if (frontendOrigin == null || frontendOrigin.isEmpty()) {
+            String referer = req.getHeader("referer");
+            if (referer != null && !referer.isEmpty()) {
+                try {
+                    java.net.URI uri = java.net.URI.create(referer);
+                    frontendOrigin = uri.getScheme() + "://" + uri.getHost() + (uri.getPort() != -1 ? ":" + uri.getPort() : "");
+                } catch (Exception e) {
+                    frontendOrigin = "http://localhost:5173";
+                }
+            } else {
+                frontendOrigin = "http://localhost:5173";
+            }
+        }
+        String returnUrl = VNPayConfig.vnp_ReturnUrl + "?frontendOrigin=" + frontendOrigin;
+
+        vnp_Params.put("vnp_ReturnUrl", returnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
