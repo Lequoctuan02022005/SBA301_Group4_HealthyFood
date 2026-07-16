@@ -7,6 +7,8 @@ import backend.repository.CartRepository;
 import backend.repository.OrderRepository;
 import backend.repository.TransactionRepository;
 import backend.service.PaymentService;
+import backend.model.Order;
+import backend.model.Transaction;
 import backend.model.enums.OrderStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +24,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/orders")
-@CrossOrigin(origins = "http://localhost:3000/")
 public class OrderController {
     @Autowired
     private OrderRepository orderRepository;
@@ -43,64 +44,32 @@ public class OrderController {
     @GetMapping("")
     public List<Order> getAll(){ return orderRepository.findAll();}
 
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<Order>> getByCustomer(@PathVariable Long customerId){
+        try {
+            List<Order> orders = orderRepository.findByCustomerIdWithDetails(customerId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Order> getById(@PathVariable long id){
         return orderRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-
-//    public ResponseEntity<Order> create(@RequestBody Order order){
-//         try{
-//             orderRepository.save(order);
-//             return ResponseEntity.ok().build();
-//         }
-//         catch (Exception ex){
-//             return ResponseEntity.internalServerError().build();
-//         }
-//    }
     @PostMapping("")
-    public /*ResponseEntity<Order>*/ String create(@RequestBody CartItemIds cartDTO/*, @RequestHeader("Authorization") String authHeader*/){
-//        String token = authHeader.substring(7);
-//        Long userId = jwtUtil.extractUserId(token);
-        long userId = 1;
-
-        try{
-            List<OrderDetail> details = new ArrayList<>();
-            List<Long> cartIdLs = cartDTO.cartItemIds;
-            for(Long cartId : cartIdLs){
-                Optional<Cart> optional = cartRepository.findById(cartId);
-                if(optional.isPresent()){
-                    Cart cart = optional.get();
-                    OrderDetail orderDetail = new OrderDetail();
-                    orderDetail.setQuantity(cart.getQuantity());
-                    orderDetail.setProduct(cart.getProduct());
-                    //cart.getQuantity()*cart.getProduct().getPrice()
-                    Double caculate = cart.getProduct().getPrice().doubleValue();
-                    caculate*= cart.getQuantity();
-                    orderDetail.setPrice(BigDecimal.valueOf(caculate));
-                    details.add(orderDetail);
-                }
-            }
-            //create order
-            Order newOrder = new Order();
-            newOrder.setOrderDetails(details);
-            newOrder.calculateTotalAmount();
-            User user = new User();
-            user.setId(userId);
-            newOrder.setCustomer(user);
-
-            orderRepository.save(newOrder);
-//            return ResponseEntity.ok().build();
-            System.out.println("Create order");
-            return "Ok";
-        }
-        catch (Exception ex){
-//            return ResponseEntity.internalServerError().build();
-            return "Error";
-        }
+    public ResponseEntity<Order> create(@RequestBody Order order){
+         try{
+             orderRepository.save(order);
+             return ResponseEntity.ok().build();
+         }
+         catch (Exception ex){
+             return ResponseEntity.internalServerError().build();
+         }
     }
-
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancel(@PathVariable long id){
@@ -136,6 +105,8 @@ public class OrderController {
         if(optional.isPresent()){
             Order order = optional.get();
             Transaction newTransaction = new Transaction();
+            newTransaction.setReferenceId(id);
+            newTransaction.setUser(order.getCustomer());
             newTransaction.setAmmount(order.getTotalAmount());
             newTransaction.setIsOrder(true);
             transactionRepository.save(newTransaction);

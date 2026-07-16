@@ -1,6 +1,7 @@
 package backend.controller;
 
 import backend.Security.JwtUtil;
+import backend.dto.AddCartDto;
 import backend.model.User;
 import backend.repository.CartRepository;
 import backend.model.Cart;
@@ -28,10 +29,8 @@ public class CartController {
     }
 
     @PostMapping("")
-    public Cart create(@RequestBody Cart cart, Long userId){
-        User user = userRepository.findById(userId).orElse(new User());
-        cart.setCustomer(user);
-        return repo.save(cart);
+    public Cart create(@RequestBody AddCartDto dto){
+        return repo.save(dto.toCart());
     }
 
     @GetMapping("/test")

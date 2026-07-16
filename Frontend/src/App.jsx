@@ -11,6 +11,9 @@ import Register from './pages/Register';
 import PaymentResult from './pages/PaymentResult';
 import ForgotPassword from './pages/ForgotPassword';
 import CustomerHome from './pages/CustomerHome';
+import CustomerProductDetail from './pages/CustomerProductDetail';
+import CustomerCart from './pages/CustomerCart';
+import CustomerOrderList from './pages/CustomerOrderList';
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminHome from "./pages/admin/AdminHome";
 import AccountList from "./pages/admin/AccountList";
@@ -135,6 +138,30 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['CUSTOMER']}>
               <CustomerHome />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/customer/product/:id" 
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerProductDetail />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/customer/cart" 
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerCart />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/customer/orders" 
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerOrderList />
             </ProtectedRoute>
           } 
         />
