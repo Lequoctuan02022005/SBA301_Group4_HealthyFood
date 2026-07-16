@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import PaymentResult from './pages/PaymentResult';
 import ForgotPassword from './pages/ForgotPassword';
+import CustomerHome from './pages/CustomerHome';
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminHome from "./pages/admin/AdminHome";
 import AccountList from "./pages/admin/AccountList";
@@ -17,14 +18,69 @@ import AccountDetail from "./pages/admin/AccountDetail";
 import CreateAccount from "./pages/admin/CreateAccount";
 import ReportList from "./pages/admin/ReportList";
 import ReportDetail from "./pages/admin/ReportDetail";
+import ManagerDashboard from './pages/ManagerDashboard';
+import PendingProducts from './pages/PendingProducts';
+import ProductDetail from './pages/ProductDetail';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  
+  let user = null;
+  try {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (e) {
+    console.error("Failed to parse user data", e);
+  }
+
   if (!token) {
     return <Navigate to="/login" replace />;
   }
+
+  if (allowedRoles && (!user || !allowedRoles.includes(user.role))) {
+    // Nếu không có quyền, tự chuyển hướng về trang phù hợp với role của họ
+    if (user) {
+      if (user.role === 'ADMIN') return <Navigate to="/admin/adminhome" replace />;
+      if (user.role === 'CUSTOMER') return <Navigate to="/customer-home" replace />;
+      if (user.role === 'MANAGER' || user.role === 'NUTRIENT') return <Navigate to="/api/manager" replace />;
+      return <Navigate to="/products" replace />;
+    }
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 };
+
+const RootRedirect = () => {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  
+  let user = null;
+  try {
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (e) {
+    console.error("Failed to parse user data", e);
+  }
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.role === 'ADMIN') {
+    return <Navigate to="/admin/adminhome" replace />;
+  }
+
+  if (user.role === 'CUSTOMER') {
+    return <Navigate to="/customer-home" replace />;
+  }
+
+  if (user.role === 'MANAGER' || user.role === 'NUTRIENT') {
+    return <Navigate to="/api/manager" replace />;
+  }
+
+  return <Navigate to="/products" replace />;
+};
+
 function App() {
   return (
     <Router>
@@ -41,8 +97,34 @@ function App() {
         theme="dark"
       />
       <Routes>
+        {/* Root Redirector */}
+        <Route path="/" element={<RootRedirect />} />
+
+        {/* Public Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/payment-result" element={<PaymentResult />} />
+
+        {/* Customer Route */}
+        <Route 
+          path="/customer-home" 
+          element={
+            <ProtectedRoute allowedRoles={['CUSTOMER']}>
+              <CustomerHome />
+            </ProtectedRoute>
+          } 
+        />
+
         {/* Admin Routes with custom AdminLayout */}
-        <Route path="/admin" element={<AdminLayout />}>
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="adminhome" element={<AdminHome />} />
           <Route path="users" element={<AccountList />} />
           <Route path="users/create" element={<CreateAccount />} />
@@ -51,16 +133,30 @@ function App() {
           <Route path="reports/:id" element={<ReportDetail />} />
         </Route>
 
-        {/* Existing Routes (Seller/Products) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/payment-result" element={<PaymentResult />} />
-        <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route index element={<Navigate to="/products" replace />} />
+        {/* Seller Routes */}
+        <Route 
+          element={
+            <ProtectedRoute allowedRoles={['SELLER']}>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="products" element={<ProductList />} />
           <Route path="upload" element={<UploadProduct />} />
           <Route path="subscription" element={<Subscription />} />
+        </Route>
+
+        {/* Manager & Nutrient Routes */}
+        <Route 
+          element={
+            <ProtectedRoute allowedRoles={['MANAGER', 'NUTRIENT']}>
+              <Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="api/manager" element={<ManagerDashboard />} />
+          <Route path="api/manager/pending-product" element={<PendingProducts />} />
+          <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>
       </Routes>
     </Router>

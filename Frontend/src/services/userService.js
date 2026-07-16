@@ -1,4 +1,4 @@
-import api from "../api/axios";
+import api from "./api";
 
 export const getKpis = () => {
     return api.get("/admin/users/kpis");

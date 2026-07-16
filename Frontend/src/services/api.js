@@ -30,7 +30,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('Response error:', error.response?.data || error.message);
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
@@ -72,5 +72,15 @@ export const createSubscriptionPayment = (userId, packageId) =>
 
 // ─── Categories ──────────────────────────────────────────────────
 export const getCategories = () => api.get('/categories');
+
+// ─── Manager Products ────────────────────────────────────────────
+export const getPendingProducts = () => api.get('/manager/products/pending');
+export const getManagerProductDetail = (id) => api.get(`/manager/products/${id}`);
+export const approveProduct = (id) => api.patch(`/manager/products/${id}/approve`);
+export const rejectProduct = (id, reviewComment) =>
+  api.patch(`/manager/products/${id}/reject?reviewComment=${encodeURIComponent(reviewComment)}`);
+export const publishProduct = (id) => api.patch(`/manager/products/${id}/publish`);
+export const hideProduct = (id, reviewComment) =>
+  api.patch(`/manager/products/${id}/hide?reviewComment=${encodeURIComponent(reviewComment)}`);
 
 export default api;
