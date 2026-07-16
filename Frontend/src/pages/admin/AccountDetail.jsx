@@ -11,7 +11,7 @@ const AccountDetail = () => {
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
 
-    const fixedAdminEmail = "admin@gmail.com";
+    const fixedAdminEmail = "admin@healthyfood.com";
     const availableRoles = ["ADMIN", "SELLER", "MODERATOR", "MANAGER", "CUSTOMER"];
 
     const fetchUser = async () => {
@@ -59,7 +59,7 @@ const AccountDetail = () => {
     if (!acc) return <div className="p-4 text-center text-danger">{error}</div>;
 
     const isActive = acc.status === "ACTIVE";
-    const isFixed = acc.email?.toLowerCase() === fixedAdminEmail.toLowerCase();
+    const isFixed = acc.email?.toLowerCase() === fixedAdminEmail.toLowerCase() || acc.role === 'ADMIN';
 
     // Format Date securely
     const formatDate = (dateStr) => {

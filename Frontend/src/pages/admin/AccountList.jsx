@@ -18,7 +18,7 @@ const AccountList = () => {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
-    const fixedAdminEmail = "admin@gmail.com";
+    const fixedAdminEmail = "admin@healthyfood.com";
     const availableRoles = ["ADMIN", "SELLER", "MODERATOR", "MANAGER", "CUSTOMER"];
 
     const fetchAccounts = async () => {
@@ -158,7 +158,7 @@ const AccountList = () => {
                                 <tbody>
                                     {accounts.map(a => {
                                         const isActive = a.status === 'ACTIVE';
-                                        const isFixed = a.email.toLowerCase() === fixedAdminEmail.toLowerCase();
+                                        const isFixed = a.email.toLowerCase() === fixedAdminEmail.toLowerCase() || a.role === 'ADMIN';
                                         const aId = a.accountId || a.id;
 
                                         return (

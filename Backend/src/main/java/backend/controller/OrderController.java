@@ -1,10 +1,12 @@
 package backend.controller;
 
+import backend.Security.JwtUtil;
+import backend.dto.CartItemIds;
+import backend.model.*;
+import backend.repository.CartRepository;
 import backend.repository.OrderRepository;
 import backend.repository.TransactionRepository;
 import backend.service.PaymentService;
-import backend.model.Order;
-import backend.model.Transaction;
 import backend.model.enums.OrderStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,20 +14,29 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/orders")
+@CrossOrigin(origins = "http://localhost:3000/")
 public class OrderController {
     @Autowired
     private OrderRepository orderRepository;
     @Autowired
     private TransactionRepository transactionRepository;
-    private final PaymentService paymentService;
+    @Autowired
+    private JwtUtil jwtUtil;
 
-    public OrderController(PaymentService paymentService) {
+    private final PaymentService paymentService;
+    private final CartRepository cartRepository;
+
+    public OrderController(PaymentService paymentService, CartRepository cartRepository) {
         this.paymentService = paymentService;
+        this.cartRepository = cartRepository;
     }
 
 
@@ -37,16 +48,59 @@ public class OrderController {
         return orderRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+
+//    public ResponseEntity<Order> create(@RequestBody Order order){
+//         try{
+//             orderRepository.save(order);
+//             return ResponseEntity.ok().build();
+//         }
+//         catch (Exception ex){
+//             return ResponseEntity.internalServerError().build();
+//         }
+//    }
     @PostMapping("")
-    public ResponseEntity<Order> create(@RequestBody Order order){
-         try{
-             orderRepository.save(order);
-             return ResponseEntity.ok().build();
-         }
-         catch (Exception ex){
-             return ResponseEntity.internalServerError().build();
-         }
+    public /*ResponseEntity<Order>*/ String create(@RequestBody CartItemIds cartDTO/*, @RequestHeader("Authorization") String authHeader*/){
+//        String token = authHeader.substring(7);
+//        Long userId = jwtUtil.extractUserId(token);
+        long userId = 1;
+
+        try{
+            List<OrderDetail> details = new ArrayList<>();
+            List<Long> cartIdLs = cartDTO.cartItemIds;
+            for(Long cartId : cartIdLs){
+                Optional<Cart> optional = cartRepository.findById(cartId);
+                if(optional.isPresent()){
+                    Cart cart = optional.get();
+                    OrderDetail orderDetail = new OrderDetail();
+                    orderDetail.setQuantity(cart.getQuantity());
+                    orderDetail.setProduct(cart.getProduct());
+                    //cart.getQuantity()*cart.getProduct().getPrice()
+                    Double caculate = cart.getProduct().getPrice().doubleValue();
+                    caculate*= cart.getQuantity();
+                    orderDetail.setPrice(BigDecimal.valueOf(caculate));
+                    details.add(orderDetail);
+                }
+            }
+            //create order
+            Order newOrder = new Order();
+            newOrder.setOrderDetails(details);
+            newOrder.calculateTotalAmount();
+            User user = new User();
+            user.setId(userId);
+            newOrder.setCustomer(user);
+
+            orderRepository.save(newOrder);
+//            return ResponseEntity.ok().build();
+            System.out.println("Create order");
+            return "Ok";
+        }
+        catch (Exception ex){
+//            return ResponseEntity.internalServerError().build();
+            return "Error";
+        }
     }
+
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> cancel(@PathVariable long id){

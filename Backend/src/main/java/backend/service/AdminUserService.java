@@ -6,6 +6,7 @@ import backend.model.enums.UserStatus;
 import backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AdminUserService {
     
-    private static final String FIXED_ADMIN_EMAIL = "admin@gmail.com";
+    private static final String FIXED_ADMIN_EMAIL = "admin@healthyfood.com";
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Map<String, Long> getKpis() {
         Map<String, Long> m = new HashMap<>();
@@ -42,6 +46,9 @@ public class AdminUserService {
     public void updateRole(Long id, Role role) {
         User user = getUser(id);
         
+        if (user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+            throw new RuntimeException("Cannot change role of an ADMIN account.");
+        }
         if (FIXED_ADMIN_EMAIL.equalsIgnoreCase(user.getEmail()) && role != Role.ADMIN) {
             throw new RuntimeException("Cannot change role of the fixed admin account.");
         }
@@ -101,7 +108,7 @@ public class AdminUserService {
         User user = new User();
         user.setEmail(dto.getEmail());
         user.setFullName(dto.getFullName());
-        user.setPassword(pwd); // Ideally encode here
+        user.setPassword(passwordEncoder.encode(pwd));
         user.setRole(newRole);
         user.setStatus(UserStatus.ACTIVE);
         user.setEmailVerified(true);
