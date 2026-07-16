@@ -30,7 +30,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('Response error:', error.response?.data || error.message);
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
