@@ -64,6 +64,7 @@ public class AuthController {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole().name())
+                .hasActiveSubscription(checkActiveSubscription(user))
                 .build());
     }
 
@@ -94,6 +95,7 @@ public class AuthController {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole().name())
+                .hasActiveSubscription(checkActiveSubscription(user))
                 .build());
     }
 
@@ -134,6 +136,16 @@ public class AuthController {
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole().name())
+                .hasActiveSubscription(checkActiveSubscription(user))
                 .build());
+    }
+
+    private boolean checkActiveSubscription(User user) {
+        if (user.getRole() != Role.SELLER) {
+            return false;
+        }
+        return user.getSubscriptionPackage() != null
+                && user.getExpireAt() != null
+                && user.getExpireAt().isAfter(java.time.LocalDateTime.now());
     }
 }

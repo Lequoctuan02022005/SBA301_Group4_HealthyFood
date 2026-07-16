@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Layout from './components/Layout';
@@ -21,10 +21,13 @@ import ReportDetail from "./pages/admin/ReportDetail";
 import ManagerDashboard from './pages/ManagerDashboard';
 import PendingProducts from './pages/PendingProducts';
 import ProductDetail from './pages/ProductDetail';
+import AIChatbox from './components/AIChatbox';
+
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   const userStr = localStorage.getItem('user');
+  const location = useLocation();
   
   let user = null;
   try {
@@ -43,9 +46,21 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       if (user.role === 'ADMIN') return <Navigate to="/admin/adminhome" replace />;
       if (user.role === 'CUSTOMER') return <Navigate to="/customer-home" replace />;
       if (user.role === 'MANAGER' || user.role === 'NUTRIENT') return <Navigate to="/api/manager" replace />;
+      if (user.role === 'SELLER') {
+        if (user.hasActiveSubscription) {
+          return <Navigate to="/products" replace />;
+        } else {
+          return <Navigate to="/subscription" replace />;
+        }
+      }
       return <Navigate to="/products" replace />;
     }
     return <Navigate to="/login" replace />;
+  }
+
+  // Nếu là seller nhưng chưa mua gói dịch vụ hoạt động, bắt buộc chuyển sang /subscription
+  if (user && user.role === 'SELLER' && !user.hasActiveSubscription && location.pathname !== '/subscription' && location.pathname !== '/payment-result') {
+    return <Navigate to="/subscription" replace />;
   }
 
   return children;
@@ -76,6 +91,14 @@ const RootRedirect = () => {
 
   if (user.role === 'MANAGER' || user.role === 'NUTRIENT') {
     return <Navigate to="/api/manager" replace />;
+  }
+
+  if (user.role === 'SELLER') {
+    if (user.hasActiveSubscription) {
+      return <Navigate to="/products" replace />;
+    } else {
+      return <Navigate to="/subscription" replace />;
+    }
   }
 
   return <Navigate to="/products" replace />;
@@ -142,6 +165,7 @@ function App() {
           }
         >
           <Route path="products" element={<ProductList />} />
+          <Route path="products/edit/:id" element={<UploadProduct />} />
           <Route path="upload" element={<UploadProduct />} />
           <Route path="subscription" element={<Subscription />} />
         </Route>
@@ -159,6 +183,7 @@ function App() {
           <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>
       </Routes>
+      <AIChatbox />
     </Router>
   );
 }

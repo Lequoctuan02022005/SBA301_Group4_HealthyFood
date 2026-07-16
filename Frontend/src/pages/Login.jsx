@@ -38,11 +38,10 @@ const Login = () => {
     setLoading(true);
     try {
       const res = await login({ email, password });
-      const { token, userId, role, fullName } = res.data;
+      const { token, userId, role, fullName, hasActiveSubscription } = res.data;
       
       localStorage.setItem('token', token);
-      console.log(token)
-      localStorage.setItem('user', JSON.stringify({ userId, email, role, fullName }));
+      localStorage.setItem('user', JSON.stringify({ userId, email, role, fullName, hasActiveSubscription }));
       
       toast.success(`Chào mừng ${fullName || email} quay trở lại!`);
       
@@ -54,7 +53,11 @@ const Login = () => {
       } else if (role === 'MANAGER' || role === 'NUTRIENT') {
         navigate('/api/manager');
       } else {
-        navigate('/products');
+        if (hasActiveSubscription) {
+          navigate('/products');
+        } else {
+          navigate('/subscription');
+        }
       }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Đăng nhập thất bại. Vui lòng kiểm tra lại!');

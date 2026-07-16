@@ -57,10 +57,10 @@ const Register = () => {
     setLoading(true);
     try {
       const res = await register({ email, password, fullName, phone, role });
-      const { token, userId, role: userRole, fullName: name } = res.data;
+      const { token, userId, role: userRole, fullName: name, hasActiveSubscription } = res.data;
       
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify({ userId, email, role: userRole, fullName: name }));
+      localStorage.setItem('user', JSON.stringify({ userId, email, role: userRole, fullName: name, hasActiveSubscription }));
       
       toast.success('Đăng ký tài khoản thành công!');
       if (userRole === 'ADMIN') {
@@ -70,7 +70,7 @@ const Register = () => {
       } else if (userRole === 'MANAGER' || userRole === 'NUTRIENT') {
         navigate('/api/manager');
       } else {
-        navigate('/products');
+        navigate('/subscription');
       }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Đăng ký thất bại. Vui lòng kiểm tra lại!');

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   HiOutlineTrash,
   HiOutlinePencilSquare,
+  HiOutlineEye,
   HiOutlineEyeSlash,
   HiOutlinePlus,
   HiOutlineFunnel,
@@ -10,7 +11,7 @@ import {
 } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
-import { getProducts, deleteProduct } from '../services/api';
+import { getProducts, deleteProduct, updateProduct } from '../services/api';
 import './ProductList.css';
 
 const containerVariants = {
@@ -116,6 +117,18 @@ function ProductList() {
       setShowDeleteModal(false);
     } catch (err) {
       toast.error('Failed to delete product');
+    }
+  };
+
+  const handleToggleHide = async (product) => {
+    try {
+      const newStatus = product.status === 'HIDDEN' ? 'PUBLISHED' : 'HIDDEN';
+      const updatedProduct = { ...product, status: newStatus };
+      await updateProduct(product.id, updatedProduct);
+      setProducts(products.map((p) => p.id === product.id ? { ...p, status: newStatus } : p));
+      toast.success(newStatus === 'HIDDEN' ? 'Sản phẩm đã được ẩn thành công!' : 'Sản phẩm đã được hiển thị lại!');
+    } catch (err) {
+      toast.error('Không thể cập nhật trạng thái sản phẩm');
     }
   };
 
@@ -273,8 +286,16 @@ function ProductList() {
                     >
                       <HiOutlinePencilSquare /> Edit
                     </Link>
-                    <button className="action-btn">
-                      <HiOutlineEyeSlash /> Hide
+                    <button className="action-btn" onClick={() => handleToggleHide(product)}>
+                      {product.status === 'HIDDEN' ? (
+                        <>
+                          <HiOutlineEye /> Show
+                        </>
+                      ) : (
+                        <>
+                          <HiOutlineEyeSlash /> Hide
+                        </>
+                      )}
                     </button>
                     <button
                       className="action-btn delete"
