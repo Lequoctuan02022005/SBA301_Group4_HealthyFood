@@ -4,6 +4,8 @@ import backend.Security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -28,30 +31,74 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Kích hoạt CORS để nhận cấu hình từ WebConfig
-                .cors(org.springframework.security.config.Customizer.withDefaults())
-                // Disable CSRF — REST API không cần CSRF
+                .cors(Customizer.withDefaults())
+
                 .csrf(AbstractHttpConfigurer::disable)
-                // Set session management to stateless
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
 
                 .authorizeHttpRequests(auth -> auth
-                        // Permit các endpoints trong AuthController
+                        // Public authentication APIs
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Permit các endpoints trong AuthController cũ / endpoints công khai khác
-                        .requestMatchers("/login", "/register", "/logout", "/verifyEmail", "/resetPassword").permitAll()
-                        // Permit VNPay payment callback
-                        .requestMatchers("/api/payment/vnpay_return").permitAll()
-                        // Yêu cầu role ADMIN cho các API admin
-                        .requestMatchers("/api/admin/**", "/admin/**").hasRole("ADMIN")
-                        // Permit các API và uploads cho frontend (các endpoint cần phân quyền cụ thể có thể điều chỉnh sau)
-                        .requestMatchers("/api/**").permitAll()
+
+                        // Legacy public authentication routes
+                        .requestMatchers(
+                                "/login",
+                                "/register",
+                                "/logout",
+                                "/verifyEmail",
+                                "/resetPassword"
+                        ).permitAll()
+
+                        // Public payment callback
+                        .requestMatchers(
+                                "/api/payment/vnpay_return"
+                        ).permitAll()
+
+                        // Swagger
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/api-docs/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // Public uploaded images
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html").permitAll()
+
+                        // Manager APIs
+                        .requestMatchers("/api/manager/**")
+                        .hasRole("MANAGER")
+
+                        // Admin APIs
+                        .requestMatchers(
+                                "/api/admin/**",
+                                "/admin/**"
+                        ).hasRole("ADMIN")
+
+                        // Optional public product viewing APIs
+                        .requestMatchers(
+                                "/api/products",
+                                "/api/products/**",
+                                "/api/categories",
+                                "/api/categories/**"
+                        ).permitAll()
+
+                        // All other API endpoints require login
+                        .requestMatchers("/api/**").authenticated()
+
+                        // Everything else also requires login
                         .anyRequest().authenticated()
                 )
-                // Add JWT filter before UsernamePasswordAuthenticationFilter
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+                .addFilterBefore(
+                        jwtAuthenticationFilter,
+                        UsernamePasswordAuthenticationFilter.class
+                );
 
         return http.build();
     }
