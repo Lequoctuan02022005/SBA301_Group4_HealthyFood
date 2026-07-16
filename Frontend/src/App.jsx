@@ -18,9 +18,9 @@ import AccountDetail from "./pages/admin/AccountDetail";
 import CreateAccount from "./pages/admin/CreateAccount";
 import ReportList from "./pages/admin/ReportList";
 import ReportDetail from "./pages/admin/ReportDetail";
-import ManagerDashboard from './pages/ManagerDashboard';
-import PendingProducts from './pages/PendingProducts';
-import ProductDetail from './pages/ProductDetail';
+import ManagerDashboard from './pages/manager/ManagerDashboard.jsx';
+import PendingProducts from './pages/manager/PendingProducts.jsx';
+import ProductDetail from './pages/manager/ProductDetail.jsx';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');

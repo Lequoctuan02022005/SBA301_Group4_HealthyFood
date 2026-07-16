@@ -15,7 +15,7 @@ import {
   rejectProduct,
   publishProduct,
   hideProduct,
-} from '../services/api';
+} from '../../services/api.js';
 import ProductDetailModal from '../components/ProductDetailModal';
 import './ManagerProducts.css';
 
