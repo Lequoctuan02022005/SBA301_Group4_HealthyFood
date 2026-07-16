@@ -4,20 +4,26 @@ import backend.config.VNPayConfig;
 import backend.repository.OrderRepository;
 import backend.repository.SubscriptionRepository;
 import backend.repository.TransactionRepository;
+import backend.repository.UserRepository;
 import backend.service.PaymentService;
 import backend.model.Order;
 import backend.model.SubscriptionPackage;
 import backend.model.Transaction;
+import backend.model.User;
 import backend.model.enums.OrderStatus;
+import backend.model.enums.TransactionStatus;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,12 +37,20 @@ public class PaymentController {
     private final TransactionRepository transactionRepository;
     private final OrderRepository orderRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final UserRepository userRepository;
 
-    public PaymentController(PaymentService paymentService, TransactionRepository transactionRepository, OrderRepository orderRepository, SubscriptionRepository subscriptionRepository) {
+    public PaymentController(
+            PaymentService paymentService,
+            TransactionRepository transactionRepository,
+            OrderRepository orderRepository,
+            SubscriptionRepository subscriptionRepository,
+            UserRepository userRepository
+    ) {
         this.paymentService = paymentService;
         this.transactionRepository = transactionRepository;
         this.orderRepository = orderRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.userRepository = userRepository;
     }
 
 
@@ -59,12 +73,10 @@ public class PaymentController {
     }
 
     @GetMapping("/vnpay_return")
-    public /*ResponseEntity<Map<String, String>>*/ String handleVNPayReturn(HttpServletRequest request){
-        Map<String, String> response = new HashMap<>();
-
-        Map<String,String> fields = new HashMap();
-        for (Enumeration params = request.getParameterNames(); params.hasMoreElements();) {
-            String fieldName = (String) params.nextElement();
+    public ResponseEntity<Void> handleVNPayReturn(HttpServletRequest request) {
+        Map<String, String> fields = new HashMap<>();
+        for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements();) {
+            String fieldName = params.nextElement();
             String fieldValue = request.getParameter(fieldName);
             if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                 fields.put(fieldName, fieldValue);
@@ -82,62 +94,114 @@ public class PaymentController {
                 VNPayConfig.secretKey
         );
 
-        if (!valid) {
-            response.put("RspCode", "97");
-            response.put("Message", "Invalid Checksum");
-//            return ResponseEntity.ok(response);
-            return "invalid";
+        String frontendOrigin = request.getParameter("frontendOrigin");
+        if (frontendOrigin == null || frontendOrigin.isEmpty()) {
+            frontendOrigin = "http://localhost:5173"; // fallback
         }
 
-        //request.getParameterNames()
-//        String orderId = request.getParameterNames("vnp_TxnRef");
-//        String amount = request.getParameterNames("vnp_TxnRef");
+        if (!valid) {
+            String redirectUrl = frontendOrigin + "/payment-result?status=fail&error=checksum";
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(redirectUrl))
+                    .build();
+        }
+
         Long transactionId = Long.parseLong(fields.get("vnp_TxnRef"));
-        BigDecimal amount = BigDecimal.valueOf(Double.valueOf(fields.get("vnp_Amount"))/100) ;
+        String responseCode = fields.get("vnp_ResponseCode");
+        String transactionStatus = fields.get("vnp_TransactionStatus");
 
-        String responseCode = fields.get("vnp_ResponseCode").toString();
-        String transactionStatus = fields.get("vnp_TransactionStatus").toString();
+        String status = "fail";
+        String error = null;
 
-        // TODO:
-        // 1. Tìm Order trong DB
-        // 2. Kiểm tra amount
-        // 3. Kiểm tra trạng thái
+        Optional<Transaction> optional = transactionRepository.findById(transactionId);
+        if (optional.isPresent()) {
+            Transaction transaction = optional.get();
+            if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
+                status = "success";
+                transaction.setStatus(TransactionStatus.SUCCESS);
+                transaction.setVnpTransactionNo(fields.get("vnp_TransactionNo"));
 
-        if ("00".equals(responseCode)
-                && "00".equals(transactionStatus)) {
-
-            // orderService.markAsPaid(orderId);
-            Optional<Transaction> optional = transactionRepository.findById(transactionId);
-            if(optional.isPresent()){
-                Transaction transaction = optional.get();
-                if(transaction.getIsOrder()){
+                if (transaction.getIsOrder()) {
                     Optional<Order> orderOptional = orderRepository.findById(transaction.getReferenceId());
-                    if(orderOptional.isPresent()){
+                    if (orderOptional.isPresent()) {
                         Order order = orderOptional.get();
                         order.setStatus(OrderStatus.PAID);
+                        orderRepository.save(order);
                     }
-                }
-                else{
+                } else {
                     Optional<SubscriptionPackage> subOptional = subscriptionRepository.findById(transaction.getReferenceId());
-                    if(subOptional.isPresent()){
-                        SubscriptionPackage subsciption = subOptional.get();
-                        //Logic subcription
+                    if (subOptional.isPresent()) {
+                        SubscriptionPackage subPackage = subOptional.get();
+                        // Logic update seller package status can be added here
                     }
                 }
+            } else {
+                status = "fail";
+                transaction.setStatus(TransactionStatus.FAILED);
             }
-
-            response.put("RspCode", "00");
-            response.put("Message", "Confirm Success");
-
+            transactionRepository.save(transaction);
         } else {
-
-            // orderService.markAsFailed(orderId);
-
-            response.put("RspCode", "00");
-            response.put("Message", "Transaction Failed");
+            status = "fail";
+            error = "not_found";
         }
-        System.out.println("Payment: "+transactionId+" "+amount+" "+responseCode);
-//        return ResponseEntity.ok(response);
-        return "Payment: "+transactionId+" "+amount+" "+responseCode;
+
+        String redirectUrl = frontendOrigin + "/payment-result?status=" + status + "&transactionId=" + transactionId;
+        if (error != null) {
+            redirectUrl += "&error=" + error;
+        }
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .location(URI.create(redirectUrl))
+                .build();
+    }
+
+    @PostMapping("/create_order_payment")
+    public ResponseEntity<Map<String, String>> createOrderPayment(
+            @RequestParam Long userId,
+            @RequestParam Long orderId,
+            HttpServletRequest request
+    ) throws UnsupportedEncodingException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        Transaction transaction = Transaction.builder()
+                .user(user)
+                .ammount(order.getTotalAmount())
+                .referenceId(orderId)
+                .isOrder(true)
+                .status(TransactionStatus.PENDING)
+                .build();
+
+        transactionRepository.save(transaction);
+
+        String paymentUrl = paymentService.createVNPayPaymentUrl(transaction, request);
+        return ResponseEntity.ok(Map.of("paymentUrl", paymentUrl));
+    }
+
+    @PostMapping("/create_subscription_payment")
+    public ResponseEntity<Map<String, String>> createSubscriptionPayment(
+            @RequestParam Long userId,
+            @RequestParam Long packageId,
+            HttpServletRequest request
+    ) throws UnsupportedEncodingException {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        SubscriptionPackage subPackage = subscriptionRepository.findById(packageId)
+                .orElseThrow(() -> new RuntimeException("Subscription Package not found"));
+
+        Transaction transaction = Transaction.builder()
+                .user(user)
+                .ammount(subPackage.getPrice())
+                .referenceId(packageId)
+                .isOrder(false)
+                .status(TransactionStatus.PENDING)
+                .build();
+
+        transactionRepository.save(transaction);
+
+        String paymentUrl = paymentService.createVNPayPaymentUrl(transaction, request);
+        return ResponseEntity.ok(Map.of("paymentUrl", paymentUrl));
     }
 }

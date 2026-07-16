@@ -12,7 +12,13 @@ const api = axios.create({
 
 // ─── Request Interceptor ─────────────────────────────────────────
 api.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
   (error) => {
     console.error('Request error:', error);
     return Promise.reject(error);
@@ -24,9 +30,22 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('Response error:', error.response?.data || error.message);
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        window.location.href = '/login';
+      }
+    }
     return Promise.reject(error);
   }
 );
+
+// ─── Authentication ──────────────────────────────────────────────
+export const login = (data) => api.post('/auth/login', data);
+export const register = (data) => api.post('/auth/register', data);
+export const getMe = () => api.get('/auth/me');
+export const resetPassword = (data) => api.post('/auth/reset-password', data);
 
 // ─── Products ────────────────────────────────────────────────────
 export const getProducts = () => api.get('/products');
@@ -43,6 +62,13 @@ export const getSubscriptions = () => api.get('/subscriptions');
 export const getSubscriptionById = (id) => api.get(`/subscriptions/${id}`);
 export const buySubscription = (userId, packageId) =>
   api.post(`/subscriptions/buy?userId=${userId}&packageId=${packageId}`);
+
+// ─── Payments (VNPay) ────────────────────────────────────────────
+export const createOrderPayment = (userId, orderId) =>
+  api.post(`/payment/create_order_payment?userId=${userId}&orderId=${orderId}`);
+
+export const createSubscriptionPayment = (userId, packageId) =>
+  api.post(`/payment/create_subscription_payment?userId=${userId}&packageId=${packageId}`);
 
 // ─── Categories ──────────────────────────────────────────────────
 export const getCategories = () => api.get('/categories');
