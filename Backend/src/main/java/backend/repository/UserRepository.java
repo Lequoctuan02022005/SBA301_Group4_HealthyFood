@@ -1,4 +1,4 @@
-package backend.Repository;
+package backend.repository;
 
 import backend.model.User;
 import backend.model.enums.UserStatus;

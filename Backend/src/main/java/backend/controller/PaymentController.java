@@ -1,30 +1,27 @@
-package backend.Controller;
+package backend.controller;
 
-import backend.Config.VNPayConfig;
-import backend.Repository.OrderRepository;
-import backend.Repository.SubscriptionRepository;
-import backend.Repository.TransactionRepository;
-import backend.Services.PaymentService;
+import backend.config.VNPayConfig;
+import backend.repository.OrderRepository;
+import backend.repository.SubscriptionRepository;
+import backend.repository.TransactionRepository;
+import backend.service.PaymentService;
 import backend.model.Order;
 import backend.model.SubscriptionPackage;
 import backend.model.Transaction;
 import backend.model.enums.OrderStatus;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.Console;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.random.RandomGenerator;
 
 @RestController()
 @RequestMapping("/api/payment")

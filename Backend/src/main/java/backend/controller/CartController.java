@@ -1,6 +1,6 @@
-package backend.Controller;
+package backend.controller;
 
-import backend.Repository.CartRepository;
+import backend.repository.CartRepository;
 import backend.model.Cart;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
