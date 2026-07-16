@@ -73,6 +73,19 @@ export const createSubscriptionPayment = (userId, packageId) =>
 // ─── Categories ──────────────────────────────────────────────────
 export const getCategories = () => api.get('/categories');
 
+// ─── Cart ─────────────────────────────────────────────────────────
+export const getCartItems = () => axios.get('http://localhost:8080/carts', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const addToCart = (cartData) => axios.post('http://localhost:8080/carts', cartData, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const updateCartItem = (id, cartData) => axios.post(`http://localhost:8080/carts/${id}`, cartData, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const deleteCartItem = (id) => axios.delete(`http://localhost:8080/carts/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+
+// ─── Orders ───────────────────────────────────────────────────────
+export const getOrders = () => axios.get('http://localhost:8080/orders', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const getOrdersByCustomer = (customerId) => axios.get(`http://localhost:8080/orders/customer/${customerId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const createOrder = (orderData) => axios.post('http://localhost:8080/orders', orderData, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const cancelOrder = (id) => axios.delete(`http://localhost:8080/orders/${id}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+export const checkoutOrder = (id) => axios.get(`http://localhost:8080/orders/${id}/checkout`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+
 // ─── Manager Products ────────────────────────────────────────────
 export const getPendingProducts = () => api.get('/manager/products/pending');
 export const getManagerProductDetail = (id) => api.get(`/manager/products/${id}`);

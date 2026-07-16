@@ -1,5 +1,6 @@
 package backend.controller;
 
+import backend.dto.AddCartDto;
 import backend.repository.CartRepository;
 import backend.model.Cart;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,8 @@ public class CartController {
     }
 
     @PostMapping("")
-    public Cart create(@RequestBody Cart cart){
-        return repo.save(cart);
+    public Cart create(@RequestBody AddCartDto dto){
+        return repo.save(dto.toCart());
     }
 
     @PostMapping("/{id}")

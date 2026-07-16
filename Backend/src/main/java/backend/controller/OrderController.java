@@ -32,6 +32,17 @@ public class OrderController {
     @GetMapping("")
     public List<Order> getAll(){ return orderRepository.findAll();}
 
+    @GetMapping("/customer/{customerId}")
+    public ResponseEntity<List<Order>> getByCustomer(@PathVariable Long customerId){
+        try {
+            List<Order> orders = orderRepository.findByCustomerIdWithDetails(customerId);
+            return ResponseEntity.ok(orders);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Order> getById(@PathVariable long id){
         return orderRepository.findById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
@@ -40,10 +51,16 @@ public class OrderController {
     @PostMapping("")
     public ResponseEntity<Order> create(@RequestBody Order order){
          try{
-             orderRepository.save(order);
-             return ResponseEntity.ok().build();
+             if (order.getOrderDetails() != null) {
+                 for (backend.model.OrderDetail detail : order.getOrderDetails()) {
+                     detail.setOrder(order);
+                 }
+             }
+             Order savedOrder = orderRepository.save(order);
+             return ResponseEntity.ok(savedOrder);
          }
          catch (Exception ex){
+             ex.printStackTrace();
              return ResponseEntity.internalServerError().build();
          }
     }
@@ -82,6 +99,8 @@ public class OrderController {
         if(optional.isPresent()){
             Order order = optional.get();
             Transaction newTransaction = new Transaction();
+            newTransaction.setReferenceId(id);
+            newTransaction.setUser(order.getCustomer());
             newTransaction.setAmmount(order.getTotalAmount());
             newTransaction.setIsOrder(true);
             transactionRepository.save(newTransaction);
