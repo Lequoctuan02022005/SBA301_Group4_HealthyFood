@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   HiOutlineCloudArrowUp,
@@ -7,8 +7,8 @@ import {
   HiOutlineCheckCircle,
 } from 'react-icons/hi2';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import { createProduct } from '../services/api';
+import { useNavigate, useParams } from 'react-router-dom';
+import { createProduct, getProductById, updateProduct } from '../services/api';
 import './UploadProduct.css';
 
 const categories = [
@@ -22,7 +22,12 @@ const categories = [
 
 const UploadProduct = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const fileInputRef = useRef(null);
+
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const loggedInSellerId = user?.userId?.toString() || '2';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -32,8 +37,35 @@ const UploadProduct = () => {
     price: '',
     quantity: '',
     categoryId: '',
-    sellerId: '2',
+    sellerId: loggedInSellerId,
   });
+
+  useEffect(() => {
+    if (id) {
+      const fetchProduct = async () => {
+        try {
+          const res = await getProductById(id);
+          const p = res.data;
+          setFormData({
+            name: p.name,
+            description: p.description || '',
+            ingredient: p.ingredient || '',
+            nutritionInfo: p.nutritionInfo || '',
+            price: p.price,
+            quantity: p.quantity,
+            categoryId: p.category?.id || '',
+            sellerId: p.seller?.id || loggedInSellerId,
+          });
+          if (p.image) {
+            setImagePreview(`http://localhost:8080/uploads/${p.image}`);
+          }
+        } catch (err) {
+          toast.error('Không thể lấy thông tin sản phẩm để chỉnh sửa.');
+        }
+      };
+      fetchProduct();
+    }
+  }, [id, loggedInSellerId]);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -131,7 +163,8 @@ const UploadProduct = () => {
     const errs = {};
 
     // Image
-    if (!image) errs.image = 'Product image is required.';
+    // Image is only required if we are not editing
+    if (!id && !image) errs.image = 'Product image is required.';
 
     // Name
     const nameErr = validateField('name', formData.name);
@@ -175,7 +208,9 @@ const UploadProduct = () => {
     setLoading(true);
     try {
       const data = new FormData();
-      data.append('image', image);
+      if (image) {
+        data.append('image', image);
+      }
       data.append('name', formData.name);
       data.append('description', formData.description);
       data.append('ingredient', formData.ingredient);
@@ -184,9 +219,16 @@ const UploadProduct = () => {
       data.append('quantity', formData.quantity);
       data.append('categoryId', formData.categoryId);
       data.append('sellerId', formData.sellerId);
-      await createProduct(data);
+      
+      if (id) {
+        await updateProduct(id, data);
+        toast.success('Product updated successfully!');
+      } else {
+        await createProduct(data);
+        toast.success('Product uploaded successfully!');
+      }
+      
       setShowSuccess(true);
-      toast.success('Product uploaded successfully!');
       setTimeout(() => navigate('/products'), 2000);
     } catch (err) {
       const errMsg = err.response?.data?.message || 'Failed to upload product. Please try again.';
@@ -214,9 +256,9 @@ const UploadProduct = () => {
     >
       {/* Page header */}
       <div className="upload-header">
-        <h1 className="upload-title">Create New Product</h1>
+        <h1 className="upload-title">{id ? 'Edit Product' : 'Create New Product'}</h1>
         <p className="upload-subtitle">
-          Fill in the details below to list a new healthy product.
+          {id ? 'Modify the details below to update your healthy product.' : 'Fill in the details below to list a new healthy product.'}
         </p>
       </div>
 
@@ -413,7 +455,7 @@ const UploadProduct = () => {
           {/* Submit */}
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? <span className="spinner" /> : <HiOutlineCloudArrowUp />}
-            <span>{loading ? 'Uploading...' : 'Upload Product'}</span>
+            <span>{loading ? (id ? 'Saving...' : 'Uploading...') : (id ? 'Save Changes' : 'Upload Product')}</span>
           </button>
         </div>
 
@@ -476,7 +518,7 @@ const UploadProduct = () => {
             >
               <HiOutlineCheckCircle />
             </motion.div>
-            <p className="success-title">Product Uploaded Successfully!</p>
+            <p className="success-title">{id ? 'Product Updated Successfully!' : 'Product Uploaded Successfully!'}</p>
             <p className="success-subtitle">Redirecting to products...</p>
           </motion.div>
         )}

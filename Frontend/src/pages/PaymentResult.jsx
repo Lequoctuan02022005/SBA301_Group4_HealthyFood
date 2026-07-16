@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineArrowLeft } from 'react-icons/hi2';
+import { getMe } from '../services/api';
 import './PaymentResult.css';
 
 const PaymentResult = () => {
@@ -18,6 +19,16 @@ const PaymentResult = () => {
 
     if (payStatus === 'success') {
       setStatus('success');
+      const refreshUser = async () => {
+        try {
+          const res = await getMe();
+          const { userId, email, role, fullName, hasActiveSubscription } = res.data;
+          localStorage.setItem('user', JSON.stringify({ userId, email, role, fullName, hasActiveSubscription }));
+        } catch (e) {
+          console.error("Failed to refresh user status", e);
+        }
+      };
+      refreshUser();
     } else {
       setStatus('fail');
     }
