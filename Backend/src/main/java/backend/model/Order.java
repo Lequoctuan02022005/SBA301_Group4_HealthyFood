@@ -22,7 +22,6 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "customer_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "password", "customerPersonalInfo", "subscriptionPackage"})
     private User customer;
-
     //thêm bảng voucher
     private String voucherCode;
 
@@ -35,4 +34,14 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties({"order", "hibernateLazyInitializer", "handler"})
     private List<OrderDetail> orderDetails;
+
+    public BigDecimal calculateTotalAmount(){
+        Double calculate = 0.0;
+        for(OrderDetail detail : orderDetails){
+            calculate *= detail.getPrice().doubleValue();
+        }
+        calculate = calculate > 5000 ? calculate : 5000;
+        this.totalAmount = BigDecimal.valueOf(calculate);
+        return this.totalAmount;
+    }
 }

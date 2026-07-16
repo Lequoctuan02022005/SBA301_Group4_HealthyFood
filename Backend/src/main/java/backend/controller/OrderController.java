@@ -1,5 +1,9 @@
 package backend.controller;
 
+import backend.Security.JwtUtil;
+import backend.dto.CartItemIds;
+import backend.model.*;
+import backend.repository.CartRepository;
 import backend.repository.OrderRepository;
 import backend.repository.TransactionRepository;
 import backend.service.PaymentService;
@@ -12,6 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,10 +29,15 @@ public class OrderController {
     private OrderRepository orderRepository;
     @Autowired
     private TransactionRepository transactionRepository;
-    private final PaymentService paymentService;
+    @Autowired
+    private JwtUtil jwtUtil;
 
-    public OrderController(PaymentService paymentService) {
+    private final PaymentService paymentService;
+    private final CartRepository cartRepository;
+
+    public OrderController(PaymentService paymentService, CartRepository cartRepository) {
         this.paymentService = paymentService;
+        this.cartRepository = cartRepository;
     }
 
 
@@ -51,16 +63,10 @@ public class OrderController {
     @PostMapping("")
     public ResponseEntity<Order> create(@RequestBody Order order){
          try{
-             if (order.getOrderDetails() != null) {
-                 for (backend.model.OrderDetail detail : order.getOrderDetails()) {
-                     detail.setOrder(order);
-                 }
-             }
-             Order savedOrder = orderRepository.save(order);
-             return ResponseEntity.ok(savedOrder);
+             orderRepository.save(order);
+             return ResponseEntity.ok().build();
          }
          catch (Exception ex){
-             ex.printStackTrace();
              return ResponseEntity.internalServerError().build();
          }
     }

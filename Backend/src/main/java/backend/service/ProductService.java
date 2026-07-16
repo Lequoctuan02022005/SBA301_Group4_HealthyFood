@@ -88,9 +88,11 @@ public class ProductService {
         product.setIngredient(request.getIngredient());
         product.setNutritionInfo(request.getNutritionInfo());
         product.setPrice(request.getPrice());
-        product.setImage(request.getImage());
+        if (request.getImage() != null && !request.getImage().trim().isEmpty()) {
+            product.setImage(request.getImage());
+        }
         product.setQuantity(request.getQuantity());
-        product.setStatus(request.getStatus());
+        product.setStatus(ProductStatus.PENDING_MANAGER);
         product.setReviewComment(request.getReviewComment());
         product.setReviewDate(request.getReviewDate());
 

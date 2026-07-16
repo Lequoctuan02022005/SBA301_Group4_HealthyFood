@@ -22,6 +22,7 @@ public class User extends BaseEntity {
     @Column(nullable = false)
     private String password;
 
+    @Column(columnDefinition = "NVARCHAR(255)")
     private String fullName;
 
     private String phone;
@@ -39,7 +40,7 @@ public class User extends BaseEntity {
 
 
     // dang json string (BMI, di ung voi gi, stk ngan hang)
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String customerPersonalInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)

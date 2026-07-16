@@ -4,9 +4,7 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'http://localhost:8080/api',
   headers: {
-    'Content-Type': 'application/json',
-    'user_type': 'admin', 
-    'user_id': '1', 
+    'Content-Type': 'application/json'
   },
 });
 
@@ -30,7 +28,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('Response error:', error.response?.data || error.message);
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
