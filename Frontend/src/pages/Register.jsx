@@ -63,7 +63,15 @@ const Register = () => {
       localStorage.setItem('user', JSON.stringify({ userId, email, role: userRole, fullName: name }));
       
       toast.success('Đăng ký tài khoản thành công!');
-      navigate('/products');
+      if (userRole === 'ADMIN') {
+        navigate('/admin/adminhome');
+      } else if (userRole === 'CUSTOMER') {
+        navigate('/customer-home');
+      } else if (userRole === 'MANAGER' || userRole === 'NUTRIENT') {
+        navigate('/api/manager');
+      } else {
+        navigate('/products');
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Đăng ký thất bại. Vui lòng kiểm tra lại!');
     } finally {

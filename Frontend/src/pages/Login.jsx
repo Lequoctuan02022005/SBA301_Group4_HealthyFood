@@ -47,7 +47,11 @@ const Login = () => {
       
       // Chuyển hướng dựa trên role
       if (role === 'ADMIN') {
-        navigate('/products');
+        navigate('/admin/adminhome');
+      } else if (role === 'CUSTOMER') {
+        navigate('/customer-home');
+      } else if (role === 'MANAGER' || role === 'NUTRIENT') {
+        navigate('/api/manager');
       } else {
         navigate('/products');
       }
