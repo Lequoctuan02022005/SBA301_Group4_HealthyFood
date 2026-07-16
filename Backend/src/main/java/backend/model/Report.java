@@ -34,20 +34,20 @@ public class Report extends BaseEntity {
     @Column(nullable = false)
     private ReportReason reason;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Builder.Default
     private Boolean isRequestRefund = false;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String sellerStatement;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private ReportStatus status = ReportStatus.PENDING;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String managerComment;
 
     private LocalDateTime resolvedAt;

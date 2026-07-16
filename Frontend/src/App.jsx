@@ -21,6 +21,8 @@ import ReportDetail from "./pages/admin/ReportDetail";
 import ManagerDashboard from './pages/ManagerDashboard';
 import PendingProducts from './pages/PendingProducts';
 import ProductDetail from './pages/ProductDetail';
+import AIChatbox from './components/AIChatbox';
+
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
@@ -181,6 +183,7 @@ function App() {
           <Route path="api/manager/pending-product/:id" element={<ProductDetail />} />
         </Route>
       </Routes>
+      <AIChatbox />
     </Router>
   );
 }
